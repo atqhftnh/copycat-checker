@@ -409,6 +409,7 @@ class IndexTrialView(View):
         scan_log, scan_results, extracted_text = process_homepage_trial(request)
 
         ai_probability_score = None
+        ai_label_from_winston = None # New variable to store the label from WinstonAI
         burstiness_score = None
         top_words = []
         analysis_message = None
@@ -417,21 +418,36 @@ class IndexTrialView(View):
             # AI detection
             from util.winston import get_winston_ai_prediction, calculate_burstiness, get_top_repeated_words
 
-            ai_probability_score = get_winston_ai_prediction(extracted_text)
+            # 🛑 FIX: Unpack the tuple returned by get_winston_ai_prediction
+            ai_probability_score, ai_label_from_winston = get_winston_ai_prediction(extracted_text)
+
             burstiness_score = calculate_burstiness(extracted_text)
             top_words = get_top_repeated_words(extracted_text)
 
             if ai_probability_score is not None:
-                if ai_probability_score > 0.5:
-                    analysis_message = "Text Analysis Result: AI generated content (WinstonAI)"
-                    scan_log.ai_label = "AI-generated"
+                # Ensure ai_probability_score is a float before comparison
+                # Add a check to ensure it's indeed a number
+                if isinstance(ai_probability_score, (int, float)):
+                    if ai_probability_score > 0.5:
+                        analysis_message = "Text Analysis Result: AI generated content (WinstonAI)"
+                        scan_log.ai_label = "AI-generated"
+                    else:
+                        analysis_message = "Text Analysis Result: Likely human content (WinstonAI)"
+                        scan_log.ai_label = "Human-written"
+                    scan_log.ai_score = ai_probability_score
                 else:
-                    analysis_message = "Text Analysis Result: Likely human content (WinstonAI)"
-                    scan_log.ai_label = "Human-written"
-                scan_log.ai_score = ai_probability_score
-                scan_log.save()
+                    # Handle unexpected type from WinstonAI if it's not None but also not a number
+                    logger.error(f"WinstonAI returned non-numeric score: {ai_probability_score}")
+                    analysis_message = "WinstonAI returned an unreadable score."
+                    scan_log.ai_label = "Error"
+                    scan_log.ai_score = None # Reset to None if type is wrong
             else:
-                analysis_message = "WinstonAI could not detect a valid result."
+                # This branch is taken if get_winston_ai_prediction returned (None, None)
+                analysis_message = "WinstonAI could not detect a valid result (API error or no response)."
+                scan_log.ai_label = "API Error"
+                scan_log.ai_score = None # Ensure score is None on error
+
+            scan_log.save() # Save changes to the scan_log object
 
         context = {
             'scan_log': scan_log,
@@ -439,7 +455,8 @@ class IndexTrialView(View):
             'ai_probability_score': ai_probability_score * 100 if ai_probability_score is not None else None,
             'burstiness_score': burstiness_score,
             'top_words': top_words,
-            'analysis_message': analysis_message or f"AI Detection: {scan_log.ai_label}" if scan_log.ai_label else None,
+            # Use ai_label_from_winston if it's the source for message, otherwise use scan_log.ai_label
+            'analysis_message': analysis_message or f"AI Detection: {scan_log.ai_label}" if scan_log and scan_log.ai_label else None,
             'student': request.user.userprofile,
         }
 
