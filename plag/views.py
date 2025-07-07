@@ -593,21 +593,52 @@ def lecturer_classroom_detail(request, classroom_id):
 
 @login_required
 def download_submissions(request, task_id):
-    
+    """
+    Allows a lecturer to download all submissions for a specific task
+    as a single ZIP file.
+    """
+    # Ensure the task exists and belongs to the logged-in lecturer
     task = get_object_or_404(Task, id=task_id, classroom__lecturer=request.user)
+    
+    # Get all submissions related to this task
     submissions = task.submissions.all()
     
+    # Create an in-memory byte buffer to store the zip file
     buffer = BytesIO()
+    
+    # Create a ZipFile object in write mode
     with ZipFile(buffer, 'w') as zip_file:
         for submission in submissions:
+            # Check if a report file exists for the submission
             if submission.report_file:
-                file_path = submission.report_file.path
-                if os.path.exists(file_path):
-                    zip_file.write(file_path, os.path.basename(file_path))
+                try:
+                    # Open the file from the storage backend.
+                    # This works for both local and cloud storage.
+                    with submission.report_file.open('rb') as f: # 'rb' for read binary
+                        # Get the original filename to use inside the zip
+                        # os.path.basename is safe as it just extracts the name from the path string
+                        file_name_in_zip = os.path.basename(submission.report_file.name)
+                        
+                        # Write the content of the file directly into the zip archive
+                        zip_file.writestr(file_name_in_zip, f.read())
+                except Exception as e:
+                    # Log the error if a specific file cannot be opened/read
+                    # You might want to use Django's logging system here
+                    print(f"Error processing file {submission.report_file.name}: {e}")
+                    # Optionally, you could add a placeholder file to the zip
+                    # indicating which file failed, or just skip it.
+                    zip_file.writestr(f"error_{os.path.basename(submission.report_file.name)}.txt", 
+                                     f"Could not process this file: {e}")
     
+    # After writing all files, seek back to the beginning of the buffer
     buffer.seek(0)
-    response = HttpResponse(buffer, content_type='application/zip')
+    
+    # Create the HTTP response with the zip file content
+    response = HttpResponse(buffer.getvalue(), content_type='application/zip')
+    
+    # Set the Content-Disposition header to prompt download
     response['Content-Disposition'] = f'attachment; filename=submissions_task_{task_id}.zip'
+    
     return response
 
 # For final report submission
