@@ -1,0 +1,495 @@
+{% extends 'plag/base1.html' %}
+{% load static %}
+
+{% block title %}
+{{ task.title }} - Task Details
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Task Detail Styles */
+  .task-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 16px;
+  }
+
+  .back-btn {
+    background-color: #f3f4f6;
+    color: #374151;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .back-btn:hover {
+    background-color: #e5e7eb;
+    transform: translateY(-1px);
+  }
+
+  /* Task Header */
+  .task-header {
+    background: linear-gradient(to right, #ff7d0b, #ebbe87);
+    color: white;
+    padding: 32px;
+    border-radius: 16px;
+    margin-bottom: 32px;
+    box-shadow: 0 10px 25px rgba(255, 125, 11, 0.2);
+  }
+
+  .task-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .task-title-icon {
+    font-size: 32px;
+  }
+
+  .task-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    font-size: 16px;
+    opacity: 0.9;
+  }
+
+  .task-info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Submissions Section */
+  .submissions-section {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(156, 215, 221, 0.2);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .section-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-icon {
+    color: #9cd7dd;
+    font-size: 28px;
+  }
+
+  .stats-summary {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: 12px 16px;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-submitted {
+    border-color: rgba(5, 150, 105, 0.2);
+    background-color: rgba(5, 150, 105, 0.05);
+  }
+
+  .stat-submitted .stat-number {
+    color: #059669;
+  }
+
+  .stat-pending {
+    border-color: rgba(245, 158, 11, 0.2);
+    background-color: rgba(245, 158, 11, 0.05);
+  }
+
+  .stat-pending .stat-number {
+    color: #f59e0b;
+  }
+
+  /* Submissions Table */
+  .submissions-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-top: 24px;
+  }
+
+  .submissions-table thead {
+    background: linear-gradient(to right, #9cd7dd, #bebebe);
+  }
+
+  .submissions-table th {
+    color: white;
+    font-weight: 600;
+    padding: 16px;
+    text-align: left;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .submissions-table td {
+    padding: 16px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    vertical-align: middle;
+  }
+
+  .submissions-table tr:hover {
+    background-color: #f9fafb;
+  }
+
+  .submissions-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Student Name */
+  .student-name {
+    font-weight: 600;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .student-avatar {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(to bottom right, #ff7d0b, #ebbe87);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  /* Status Badges */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .status-submitted {
+    background-color: rgba(5, 150, 105, 0.1);
+    color: #059669;
+    border: 1px solid rgba(5, 150, 105, 0.2);
+  }
+
+  .status-not-submitted {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+
+  .status-icon {
+    font-size: 10px;
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: #6b7280;
+  }
+
+  .empty-icon {
+    font-size: 48px;
+    color: #d1d5db;
+    margin-bottom: 16px;
+  }
+
+  .empty-text {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .empty-subtext {
+    font-size: 14px;
+    opacity: 0.8;
+  }
+
+  /* Progress Bar */
+  .progress-container {
+    margin: 24px 0;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #f3f4f6;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(to right, #059669, #10b981);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .task-container {
+      padding: 24px 16px;
+    }
+
+    .task-header {
+      padding: 24px;
+    }
+
+    .task-title {
+      font-size: 24px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .task-info {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .submissions-section {
+      padding: 20px;
+    }
+
+    .submissions-table {
+      font-size: 14px;
+    }
+
+    .submissions-table th,
+    .submissions-table td {
+      padding: 12px 8px;
+    }
+
+    .student-name {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .stats-summary {
+      justify-content: center;
+    }
+
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<div class="task-container">
+  <!-- Back Button -->
+  <a href="{% url 'lecturer_classroom_detail' classroom.id %}" class="back-btn">
+    <i class="fas fa-arrow-left"></i>
+    Back to Classroom
+  </a>
+
+  <!-- Task Header -->
+  <div class="task-header">
+    <h1 class="task-title">
+      <i class="fas fa-file-alt task-title-icon"></i>
+      {{ task.title }}
+    </h1>
+    <div class="task-info">
+      <div class="task-info-item">
+        <i class="fas fa-chalkboard-teacher"></i>
+        <span>{{ classroom.name }}</span>
+      </div>
+      {% if task.deadline %}
+      <div class="task-info-item">
+        <i class="fas fa-clock"></i>
+        <span>Due: {{ task.deadline|date:"F j, Y H:i" }}</span>
+      </div>
+      {% else %}
+      <div class="task-info-item">
+        <i class="fas fa-infinity"></i>
+        <span>No deadline</span>
+      </div>
+      {% endif %}
+      {% if task.description %}
+      <div class="task-info-item">
+        <i class="fas fa-info-circle"></i>
+        <span>{{ task.description }}</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Submissions Section -->
+  <div class="submissions-section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="fas fa-users section-icon"></i>
+        Student Submissions
+      </h2>
+
+      <!-- Stats Summary -->
+      <div class="stats-summary">
+        <div class="stat-item stat-submitted">
+          <div class="stat-number">{{ submitted_count }}</div>
+          <div class="stat-label">Submitted</div>
+        </div>
+
+        <div class="stat-item stat-pending">
+          <div class="stat-number">{{ pending_count }}</div>
+          <div class="stat-label">Pending</div>
+        </div>
+
+        <div class="stat-item">
+          <div class="stat-number">{{ total_count }}</div>
+          <div class="stat-label">Total</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-label">
+        <span>Submission Progress</span>
+        <span>{% widthratio submitted_count total_count 100 %}%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: {% widthratio submitted_count total_count 100 %}%"></div>
+      </div>
+    </div>
+
+    <!-- Submissions Table -->
+    {% if student_submissions %}
+    <div class="table-container">
+      <table class="submissions-table">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Submission Status</th>
+            <th>Submitted Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in student_submissions %}
+          <tr>
+            <td>
+              <div class="student-name">
+                <div class="student-avatar">
+                  {{ entry.student.userprofile.full_name|first|upper }}
+                </div>
+                <div>
+                  <div>{{ entry.student.userprofile.full_name }}</div>
+                  <div style="font-size: 12px; color: #6b7280; font-weight: 400">
+                    {{ entry.student.email }}
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>
+              {% if entry.submitted %}
+              <span class="status-badge status-submitted">
+                <i class="fas fa-check-circle status-icon"></i>
+                Submitted
+              </span>
+              {% else %}
+              <span class="status-badge status-not-submitted">
+                <i class="fas fa-clock status-icon"></i>
+                Not Submitted
+              </span>
+              {% endif %}
+            </td>
+            <td>
+              {% if entry.submitted %}
+              <span style="color: #059669; font-weight: 500">
+                {{ entry.submission_date|date:"M j, Y H:i"|default:"Recently" }}
+              </span>
+              {% else %}
+              <span style="color: #6b7280">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">
+        <i class="fas fa-inbox"></i>
+      </div>
+      <div class="empty-text">No submissions yet</div>
+      <div class="empty-subtext">
+        Students haven't started submitting their work for this task.
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

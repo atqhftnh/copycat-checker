@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plagiarism Checker</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; line-height: 1.6; }
+        .messages { list-style: none; padding: 0; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        .info { color: blue; }
+        form { margin-top: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 5px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="file"] { margin-bottom: 15px; padding: 8px; border: 1px solid #ddd; border-radius: 3px; width: 100%; box-sizing: border-box; }
+        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+
+        /* Report Styling */
+        .report-section { margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+        .report-header { background-color: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 20px; }
+        .report-summary-item { margin-bottom: 10px; }
+        .chunk-item { background-color: #fff; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 15px; padding: 15px; }
+        .chunk-text { font-style: italic; color: #333; margin-bottom: 10px; }
+        .matches-list { list-style: none; padding: 0; margin-left: 20px; }
+        .match-item { background-color: #f9f9f9; border-left: 3px solid; padding: 10px; margin-bottom: 5px; }
+        .corpus-match { border-color: #28a745; } /* Green for corpus */
+        .web-match { border-color: #ffc107; }    /* Yellow/Orange for web */
+        .match-highlight em { background-color: yellow; font-weight: bold; }
+        .no-matches { color: green; font-weight: bold; }
+        .has-matches { color: red; font-weight: bold; }
+        .original-doc-display { white-space: pre-wrap; background-color: #f9f9f9; border: 1px solid #eee; padding: 15px; margin-top: 20px; max-height: 400px; overflow-y: scroll; }
+        
+        .report-source-section { margin-top: 25px; padding-top: 15px; border-top: 1px dashed #ddd;}
+        .report-source-section h3 { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>Plagiarism Checker</h1>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Check Document</button>
+    </form>
+
+    {% if combined_report %}
+        <div class="report-section">
+            <div class="report-header">
+                <h2>Plagiarism Report Summary</h2>
+                <p class="report-summary-item">Overall Plagiarism Score: <strong style="font-size: 1.2em;">{{ combined_report.overall_percentage|floatformat:2 }}%</strong></p>
+                <p class="report-summary-item">Corpus Matches Percentage: <strong>{{ combined_report.corpus_percentage|floatformat:2 }}%</strong></p>
+                <p class="report-summary-item">Web Matches Percentage: <strong>{{ combined_report.web_percentage|floatformat:2 }}%</strong></p>
+            </div>
+
+            {% if combined_report.errors %}
+                <div class="report-source-section" style="border-left: 5px solid red; padding-left: 10px; background-color: #ffe0e0;">
+                    <h3>Errors during check:</h3>
+                    <ul>
+                        {% for error in combined_report.errors %}
+                            <li>{{ error.source_type }}: {{ error.error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% if check_doc_content %}
+                <h3>Analyzed Document Content:</h3>
+                <div class="original-doc-display">
+                    <p>{{ check_doc_content }}</p>
+                </div>
+            {% endif %}
+
+            <div class="report-source-section">
+                <h3>Corpus Matches Breakdown:</h3>
+                {% if combined_report.corpus_matches %}
+                    {% for chunk_report in combined_report.corpus_matches %}
+                        <div class="chunk-item">
+                            <p><strong>Original Chunk:</strong> <span class="chunk-text">{{ chunk_report.chunk_text }}</span></p>
+                            {% if chunk_report.is_plagiarized %}
+                                <p class="has-matches">Potential Matches Found in Corpus:</p>
+                                <ul class="matches-list">
+                                    {% for match in chunk_report.matches %}
+                                        <li class="match-item corpus-match">
+                                            <p>Matched with: <strong>{{ match.title }}</strong> (Score: {{ match.score|floatformat:2 }})</p>
+                                            {% if match.highlight %}
+                                                <p class="match-highlight">Snippet: {{ match.highlight.0|safe }}</p>
+                                            {% else %}
+                                                <p>No highlight available for this match.</p>
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="no-matches">No significant matches found for this chunk in the Corpus.</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No matches found in the Corpus for the uploaded document.</p>
+                {% endif %}
+            </div>
+
+            <div class="report-source-section">
+                <h3>Web Matches Breakdown:</h3>
+                {% if combined_report.web_matches %}
+                    {% for chunk_report in combined_report.web_matches %}
+                        <div class="chunk-item">
+                            <p><strong>Original Chunk:</strong> <span class="chunk-text">{{ chunk_report.chunk_text }}</span></p>
+                            {% if chunk_report.is_plagiarized %}
+                                <p class="has-matches">Potential Matches Found on Web:</p>
+                                <ul class="matches-list">
+                                    {% for match in chunk_report.matches %}
+                                        <li class="match-item web-match">
+                                            <p>Matched with: <strong>{{ match.title }}</strong> (Score: {{ match.score|floatformat:2 }}) {% if match.url %}(<a href="{{ match.url }}" target="_blank">Link</a>){% endif %}</p>
+                                            {% if match.highlight %}
+                                                <p class="match-highlight">Snippet: {{ match.highlight.0|safe }}</p>
+                                            {% else %}
+                                                <p>No highlight available for this match.</p>
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="no-matches">No significant matches found for this chunk on the Web.</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No matches found on the Web for the uploaded document.</p>
+                {% endif %}
+            </div>
+
+        </div>
+    {% endif %}
+
+    <p><a href="{% url 'upload_document' %}">Upload More Documents to Corpus (Admin)</a></p>
+    </body>
+</html>

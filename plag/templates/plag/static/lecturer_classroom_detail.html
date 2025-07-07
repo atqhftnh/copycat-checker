@@ -1,0 +1,836 @@
+{% extends 'plag/base1.html' %}
+{% load static %}
+
+{% block title %}
+{{ classroom.name }} - Lecturer View
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Lecturer Classroom Detail Styles */
+    .classroom-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 32px 16px;
+    }
+
+    .back-btn {
+        background-color: #f3f4f6;
+        color: #374151;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 24px;
+    }
+
+    .back-btn:hover {
+        background-color: #e5e7eb;
+        transform: translateY(-1px);
+    }
+
+    /* Classroom Header */
+    .classroom-header {
+        background: linear-gradient(to right, #ff7d0b, #ebbe87);
+        color: white;
+        padding: 32px;
+        border-radius: 16px;
+        margin-bottom: 32px;
+        box-shadow: 0 10px 25px rgba(255, 125, 11, 0.2);
+    }
+
+    .classroom-title {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .classroom-description {
+        font-size: 16px;
+        opacity: 0.9;
+        margin-bottom: 16px;
+        line-height: 1.6;
+    }
+
+    .join-code {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-family: "Courier New", monospace;
+    }
+
+    /* Main Grid Layout */
+    .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 32px;
+    }
+
+    /* Tasks Section */
+    .tasks-section {
+        background: white;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 125, 11, 0.2);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .section-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .section-icon {
+        color: #ff7d0b;
+        font-size: 28px;
+    }
+
+    .create-task-btn {
+        background-color: #ff7d0b;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .create-task-btn:hover {
+        background-color: rgba(255, 125, 11, 0.9);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 125, 11, 0.3);
+    }
+
+    /* Task Cards */
+    .task-card {
+        background: linear-gradient(to bottom right,
+                rgba(255, 125, 11, 0.05),
+                rgba(235, 190, 135, 0.05));
+        border: 1px solid rgba(255, 125, 11, 0.2);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        transition: all 0.3s;
+    }
+
+    .task-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 125, 11, 0.15);
+        border-color: #ff7d0b;
+    }
+
+    .task-card:last-child {
+        margin-bottom: 0;
+    }
+
+    .task-header {
+        margin-bottom: 16px;
+    }
+
+    .task-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .task-title-icon {
+        color: #ff7d0b;
+        font-size: 18px;
+    }
+
+    .task-description {
+        color: #4b5563;
+        line-height: 1.6;
+        margin-bottom: 12px;
+    }
+
+    .task-deadline {
+        background-color: rgba(107, 114, 128, 0.1);
+        color: #6b7280;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .task-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+    }
+
+    .task-btn {
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+    }
+
+    .btn-download {
+        background-color: #059669;
+        color: white;
+    }
+
+    .btn-download:hover {
+        background-color: #047857;
+    }
+
+    .btn-edit {
+        background-color: #f59e0b;
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background-color: #d97706;
+    }
+
+    .btn-delete {
+        background-color: #dc2626;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background-color: #b91c1c;
+    }
+
+    .btn-view {
+        background-color: #3b82f6;
+        color: white;
+    }
+
+    .btn-view:hover {
+        background-color: #2563eb;
+    }
+
+    /* Students Section */
+    .students-section {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(156, 215, 221, 0.2);
+        overflow: hidden;
+    }
+
+    .students-header {
+        background: linear-gradient(to right, #9cd7dd, #bebebe);
+        color: white;
+        padding: 20px 24px;
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .students-content {
+        padding: 24px;
+    }
+
+    .add-student-form {
+        background-color: #f9fafb;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 24px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.15s;
+        background-color: white;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #9cd7dd;
+        box-shadow: 0 0 0 3px rgba(156, 215, 221, 0.1);
+    }
+
+    .add-student-btn {
+        background-color: #9cd7dd;
+        color: #374151;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .add-student-btn:hover {
+        background-color: #67a3af;
+        color: white;
+    }
+
+    .students-list-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #f3f4f6;
+    }
+
+    .student-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .student-item:last-child {
+        border-bottom: none;
+    }
+
+    .student-info {
+        flex: 1;
+    }
+
+    .student-name {
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 4px;
+    }
+
+    .student-email {
+        background-color: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .remove-btn {
+        background-color: rgba(220, 38, 38, 0.1);
+        color: #dc2626;
+        border: 1px solid rgba(220, 38, 38, 0.2);
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .remove-btn:hover {
+        background-color: #dc2626;
+        color: white;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+        background: white;
+        margin: 5% auto;
+        padding: 0;
+        width: 90%;
+        max-width: 600px;
+        border-radius: 16px;
+        position: relative;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-header {
+        background: linear-gradient(to right, #ff7d0b, #ebbe87);
+        color: white;
+        padding: 20px 24px;
+        border-radius: 16px 16px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.15s;
+    }
+
+    .modal-close:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .modal-body {
+        padding: 24px;
+    }
+
+    .modal-form-group {
+        margin-bottom: 20px;
+    }
+
+    .modal-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .modal-input,
+    .modal-textarea {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.15s;
+        font-family: inherit;
+    }
+
+    .modal-input:focus,
+    .modal-textarea:focus {
+        outline: none;
+        border-color: #ff7d0b;
+        box-shadow: 0 0 0 3px rgba(255, 125, 11, 0.1);
+    }
+
+    .modal-textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .modal-footer {
+        padding: 16px 24px 24px;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+
+    .modal-btn {
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .modal-btn-secondary {
+        background-color: #f3f4f6;
+        color: #374151;
+    }
+
+    .modal-btn-secondary:hover {
+        background-color: #e5e7eb;
+    }
+
+    .modal-btn-primary {
+        background-color: #ff7d0b;
+        color: white;
+    }
+
+    .modal-btn-primary:hover {
+        background-color: rgba(255, 125, 11, 0.9);
+    }
+
+    /* Empty States */
+    .empty-state {
+        text-align: center;
+        padding: 48px 24px;
+        color: #6b7280;
+    }
+
+    .empty-icon {
+        font-size: 48px;
+        color: #d1d5db;
+        margin-bottom: 16px;
+    }
+
+    .empty-text {
+        font-size: 16px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .main-grid {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .students-section {
+            order: -1;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .classroom-container {
+            padding: 24px 16px;
+        }
+
+        .classroom-header {
+            padding: 24px;
+        }
+
+        .classroom-title {
+            font-size: 24px;
+        }
+
+        .tasks-section,
+        .students-content {
+            padding: 20px;
+        }
+
+        .task-actions {
+            flex-direction: column;
+        }
+
+        .task-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .modal-content {
+            margin: 10% auto;
+            width: 95%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="classroom-container">
+    <!-- Back Button -->
+    <a href="{% url 'lecturer_dashboard' %}" class="back-btn">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+
+    <!-- Classroom Header -->
+    <div class="classroom-header">
+        <h1 class="classroom-title">{{ classroom.name }}</h1>
+        {% if classroom.description %}
+        <p class="classroom-description">{{ classroom.description }}</p>
+        {% endif %}
+        <div class="join-code">
+            <i class="fas fa-key"></i> <strong>Join Code:</strong> {{ classroom.join_code }}
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="main-grid">
+        <!-- Tasks Section -->
+        <div class="tasks-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-tasks section-icon"></i> Current Tasks
+                </h2>
+                <button type="button" id="openTaskModalBtn" class="create-task-btn">
+                    <i class="fas fa-plus"></i> Create Task
+                </button>
+            </div>
+
+            <!-- Tasks List -->
+            {% if tasks %}
+            <div class="tasks-list">
+                {% for task in tasks %}
+                <div class="task-card">
+                    <div class="task-header">
+                        <h3 class="task-title">
+                            <i class="fas fa-file-alt task-title-icon"></i> {{ task.title }}
+                        </h3>
+                        <p class="task-description">{{ task.description }}</p>
+                        <div class="task-deadline">
+                            <i class="fas fa-clock"></i>
+                            {% if task.deadline %}
+                            Deadline: {{ task.deadline|date:"F j, Y H:i" }}
+                            {% else %}
+                            No deadline
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="task-actions">
+                        <a href="{% url 'download_submissions' task.id %}" class="task-btn btn-download">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+
+                        <button class="task-btn btn-edit editTaskBtn" data-task-id="{{ task.id }}"
+                            data-task-title="{{ task.title|escapejs }}" data-task-desc="{{ task.description|escapejs }}"
+                            data-task-deadline="{% if task.deadline %}{{ task.deadline|date:'Y-m-d\\TH:i' }}{% endif %}">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+
+                        <form method="post" action="{% url 'delete_task' task.id %}" style="display: inline"
+                            onsubmit="return confirm('Are you sure you want to delete this task?');">
+                            {% csrf_token %}
+                            <button type="submit" class="task-btn btn-delete">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </form>
+
+                        <a href="{% url 'view_task_detail' classroom.id task.id %}" class="task-btn btn-view">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div class="empty-text">No tasks created yet.</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Students Section -->
+        <div class="students-section">
+            <div class="students-header">
+                <i class="fas fa-users"></i> Students
+            </div>
+            <div class="students-content">
+                <!-- Add Student Form -->
+                <div class="add-student-form">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            {{ student_form.student.label_tag }} {{ student_form.student }}
+                        </div>
+                        <button type="submit" name="add_student" class="add-student-btn">
+                            <i class="fas fa-user-plus"></i> Add Student
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Enrolled Students -->
+                <h4 class="students-list-title">Enrolled Students ({{ classroom.students.count }})</h4>
+
+                {% if classroom.students.all %}
+                <div class="students-list">
+                    {% for student in classroom.students.all %}
+                    <div class="student-item">
+                        <div class="student-info">
+                            <div class="student-name">{{ student.full_name }}</div>
+                            <div class="student-email">{{ student.email }}</div>
+                        </div>
+                        <form method="post" action="{% url 'remove_student' classroom.id student.id %}"
+                            onsubmit="return confirm('Remove {{ student.full_name }} from this classroom?');">
+                            {% csrf_token %}
+                            <button type="submit" class="remove-btn">
+                                <i class="fas fa-times"></i> Remove
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state" style="padding: 24px">
+                    <div class="empty-icon" style="font-size: 32px; margin-bottom: 8px">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <div class="empty-text" style="font-size: 14px">No students enrolled yet.</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Task Modal -->
+<div id="taskModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="taskModalLabel">Create Task</h3>
+            <button class="modal-close" onclick="closeTaskModal()">&times;</button>
+        </div>
+
+        <form method="post" id="taskForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="modal-form-group">
+                    <label class="modal-label">Title</label>
+                    <input type="text" name="title" maxlength="200" class="modal-input" id="id_title" required />
+                </div>
+
+                <div class="modal-form-group">
+                    <label class="modal-label">Description</label>
+                    <textarea name="description" class="modal-textarea" id="id_description" rows="3"></textarea>
+                </div>
+
+                <div class="modal-form-group">
+                    <label class="modal-label">Deadline</label>
+                    <input type="datetime-local" name="deadline" class="modal-input" id="id_deadline" />
+                </div>
+
+                <input type="hidden" name="task_id" id="task_id" value="" />
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="modal-btn modal-btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                <button type="submit" name="create_task" class="modal-btn modal-btn-primary">Save Task</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- jQuery (required for Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Select2 CSS & JS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    // Initialize Select2
+    $("#id_student").select2({
+        placeholder: "Type student ID here",
+        width: "100%",
+    });
+
+    // Task Modal Functions
+    function openTaskModal() {
+        document.getElementById("taskModal").style.display = "block";
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeTaskModal() {
+        document.getElementById("taskModal").style.display = "none";
+        document.body.style.overflow = "auto";
+    }
+
+    // Task Modal Event Listeners
+    document.addEventListener("DOMContentLoaded", function () {
+        var taskForm = document.getElementById("taskForm");
+        var taskModalLabel = document.getElementById("taskModalLabel");
+
+        document.getElementById("openTaskModalBtn").addEventListener("click", function () {
+            taskForm.reset();
+            taskModalLabel.textContent = "Create Task";
+            document.getElementById("task_id").value = "";
+            taskForm.action = "{% url 'lecturer_classroom_detail' classroom.id %}";
+            openTaskModal();
+        });
+
+        document.querySelectorAll(".editTaskBtn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                var taskId = this.dataset.taskId;
+                var title = this.dataset.taskTitle;
+                var description = this.dataset.taskDesc;
+                var deadline = this.dataset.taskDeadline;
+
+                taskModalLabel.textContent = "Edit Task";
+                document.getElementById("id_title").value = title;
+                document.getElementById("id_description").value = description;
+                document.getElementById("id_deadline").value = deadline || "";
+                document.getElementById("task_id").value = taskId;
+
+                taskForm.action = "{% url 'edit_task' classroom.id 0 %}".replace("0", taskId);
+                openTaskModal();
+            });
+        });
+
+        document.getElementById("taskModal").addEventListener("click", function (e) {
+            if (e.target === this) {
+                closeTaskModal();
+            }
+        });
+
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") {
+                closeTaskModal();
+            }
+        });
+    });
+</script>
+{% endblock %}

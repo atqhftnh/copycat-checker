@@ -1,0 +1,874 @@
+{% extends 'plag/base.html' %}
+{% load staticfiles %}
+
+{% block title %}Plagiarism & AI Detection Report{% endblock %}
+{% block desc %}Official report from CopyCat Checker{% endblock %}
+
+{% block header_section %}
+<style type="text/css">
+    /* ===== WEB VIEW STYLES ===== */
+    tr.falsePositive {
+        display: none;
+    }
+
+    tr.falsePositive.show-fp {
+        display: table-row;
+        background-color: #F0F0F0;
+        color: #555;
+    }
+
+    tr.falsePositive.show-fp td a {
+        color: #337ab7;
+    }
+
+    #overallPlagiarismDisplay {
+        font-size: 2.5em;
+        font-weight: bold;
+        color: #333;
+        transition: color 0.3s ease-in-out;
+    }
+
+    #overallPlagiarismDisplay.high-plagiarism {
+        color: #d9534f;
+    }
+
+    #overallPlagiarismDisplay.medium-plagiarism {
+        color: #f0ad4e;
+    }
+
+    #overallPlagiarismDisplay.low-plagiarism {
+        color: #5cb85c;
+    }
+
+    .success {
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    .error {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .warning {
+        color: #ffc107;
+        font-weight: bold;
+    }
+
+    pre {
+        background: #f8f9fa;
+        padding: 1em;
+        border-radius: 8px;
+        overflow-x: auto;
+        border-left: 4px solid #6c757d;
+    }
+
+    .results-summary {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+        margin-bottom: 25px;
+    }
+
+    .summary-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e9ecef;
+    }
+
+    .summary-card h3 {
+        margin-top: 0;
+        color: #212529;
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 10px;
+        font-size: 1.25rem;
+    }
+
+    .chart-container {
+        width: 100%;
+        height: 350px;
+        margin: 25px 0;
+    }
+
+    .print-button {
+        background: #20c997;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 30px 0;
+        display: inline-block;
+        text-align: center;
+        transition: all 0.3s;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .print-button:hover {
+        background: #1aa179;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .summary-grid.two-columns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 25px;
+    }
+
+    .left-column {
+        flex: 1;
+        min-width: 300px;
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .right-column {
+        flex: 1;
+        min-width: 300px;
+    }
+
+    /* ===== PRINT STYLES ===== */
+    @media print {
+        @page {
+            size: A4;
+            margin: 1.5cm 2cm;
+
+            @top-left {
+                content: "CopyCat Checker Report";
+                font-size: 10pt;
+                color: #6c757d;
+                font-family: "Helvetica Neue", Arial, sans-serif;
+            }
+
+            @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 10pt;
+                color: #6c757d;
+            }
+        }
+
+        body {
+            font-family: "Georgia", "Times New Roman", serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #212529;
+            background: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .print-header {
+            display: block !important;
+            text-align: center;
+            margin-bottom: 1.5cm;
+            padding-bottom: 1cm;
+            border-bottom: 2px solid #343a40;
+        }
+
+        .print-header img {
+            height: 1.5cm;
+            margin-bottom: 0.5cm;
+            opacity: 0.9;
+        }
+
+        .print-header h1 {
+            font-size: 22pt;
+            margin: 0 0 0.25cm 0;
+            color: #212529;
+            font-weight: 600;
+        }
+
+        .print-header .subtitle {
+            font-size: 13pt;
+            margin: 0;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .print-header .meta {
+            font-size: 10pt;
+            margin: 0.5cm 0 0;
+            color: #6c757d;
+        }
+
+        .print-footer {
+            display: block !important;
+            text-align: center;
+            margin-top: 1cm;
+            padding-top: 0.5cm;
+            border-top: 1px solid #343a40;
+            font-size: 9pt;
+            color: #6c757d;
+        }
+
+        .no-print,
+        .sidebar,
+        nav,
+        .nav,
+        .navbar,
+
+        .sidebar {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            overflow: hidden !important;
+        }
+
+
+        footer {
+            display: none !important;
+        }
+
+        .container {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+        }
+
+        .results-summary,
+        .summary-card,
+        pre,
+        .chart-container {
+            page-break-inside: avoid;
+        }
+
+        h2 {
+            font-size: 15pt;
+            page-break-after: avoid;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 0.2cm;
+            color: #343a40;
+        }
+
+        /* Force Detailed Source Matches to start on new page */
+        h2:nth-of-type(1),
+        /* Lexical Analysis */
+        h2:nth-of-type(2) {
+            /* Detailed Source Matches */
+            page-break-before: always;
+            margin-top: 0;
+            padding-top: 0.5cm;
+        }
+
+        /* Remove extra space when these are first on page */
+        h2:nth-of-type(1):first-child,
+        h2:nth-of-type(2):first-child {
+            padding-top: 0;
+        }
+
+        /* Adjust spacing after these headings */
+        h2:nth-of-type(1)+.word-frequency,
+        h2:nth-of-type(2)+.table-responsive {
+            margin-top: 0.5cm;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.5cm 0 0.75cm;
+            font-size: 10pt;
+            page-break-inside: auto;
+        }
+
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        tfoot {
+            display: table-footer-group;
+        }
+
+        table th {
+            background-color: #f8f9fa !important;
+            color: #212529 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            font-weight: 600;
+        }
+
+        table th,
+        table td {
+            border: 1px solid #dee2e6;
+            padding: 0.3cm 0.5cm;
+            text-align: left;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background: none;
+            border: 1px solid #dee2e6;
+            font-family: "Courier New", monospace;
+            font-size: 9.5pt;
+            line-height: 1.4;
+            margin: 0.5cm 0;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25cm;
+            margin-bottom: 1.25cm;
+        }
+
+        .summary-card {
+            border: 1px solid #dee2e6;
+            padding: 0.75cm;
+            background: #fff !important;
+            page-break-inside: avoid;
+        }
+
+        .chart-container {
+            height: 7cm;
+            margin: 0.75cm 0;
+        }
+
+        #overallPlagiarismDisplay {
+            font-size: 26pt;
+            margin: 0.4cm 0;
+            display: block;
+        }
+
+        .success {
+            color: #28a745 !important;
+        }
+
+        .error {
+            color: #dc3545 !important;
+        }
+
+        .warning {
+            color: #ffc107 !important;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .break {
+            word-break: break-word;
+            hyphens: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block sidebar-content %}
+<section class="box-titled no-print">
+    <header>
+        <h2>Results Summary</h2>
+    </header>
+    <ul>
+        <li><span id="resultTotal">{{ scan_results|length }}</span> potential matches</li>
+        <li><span id="resultPostProcd">0</span> results verified</li>
+        <li class="falsePositiveMsg hide"><span class="resultFalsePos">0</span> false positives</li>
+        <li>Overall Similarity:
+            <span id="averagePlagiarismPercent">
+                {% if scan_log.overall_plagiarism_percentage is not None %}
+                {{ scan_log.overall_plagiarism_percentage|floatformat:2 }}%
+                {% else %}
+                Calculating...
+                {% endif %}
+            </span>
+        </li>
+    </ul>
+</section>
+{% endblock %}
+
+{% block content %}
+<!-- Web View Header -->
+<div class="no-print">
+    <h1>Plagiarism & AI Detection Results</h1>
+    <div class="alert alert-info">
+        <span id="resultTotal">{{ scan_results|length }}</span> potential matches found |
+        <span class="falsePositiveMsg hide"><span class="resultFalsePos">0</span> false positives identified</span>
+    </div>
+</div>
+
+<!-- Print Header -->
+<div class="print-header" style="display: none;">
+    <img src="{% static 'plag/icon/logo.png' %}" alt="Copycat Checker">
+    <h1>Plagiarism & AI Content Analysis Report</h1>
+    <p class="subtitle">Comprehensive Document Authenticity Assessment</p>
+    <p class="meta">
+        Report generated: {{ scan_log.created_at|date:"F j, Y \a\t H:i" }}<br>
+        Document ID: PG-{{ scan_log.id|stringformat:"06d" }}<br><br>
+        Student Name: {{ student.full_name }}<br>
+        Student ID: {{ student.student_id|default:"-" }}
+    </p>
+</div>
+
+<!-- Main Content -->
+<div class="results-summary">
+    <h2>Document Authenticity Summary</h2>
+
+    <div class="summary-grid two-columns">
+        <!-- LEFT COLUMN: Plagiarism + AI -->
+        <div class="left-column">
+            <!-- Plagiarism Detection Card -->
+            <div class="summary-card">
+                <h3>Plagiarism Detection</h3>
+                <div class="plagiarism-metric">
+                    <p>Overall Document Similarity:</p>
+                    <div id="overallPlagiarismDisplay" {% if scan_log.overall_plagiarism_percentage is not None %}
+                        {% if scan_log.overall_plagiarism_percentage > 70 %}class="high-plagiarism"
+                        {% elif scan_log.overall_plagiarism_percentage > 30 %}class="medium-plagiarism"
+                        {% else %}class="low-plagiarism"
+                        {% endif %}
+                        {% endif %}>
+                        {% if scan_log.overall_plagiarism_percentage is not None %}
+                        {{ scan_log.overall_plagiarism_percentage|floatformat:2 }}%
+                        {% else %}
+                        Analyzing...
+                        {% endif %}
+                    </div>
+                    {% if scan_log.overall_plagiarism_percentage is not None %}
+                    <div class="plagiarism-assessment">
+                        {% if scan_log.overall_plagiarism_percentage > 70 %}
+                        <p class="error">▲ High plagiarism risk detected</p>
+                        <p>Significant portions of this document match existing sources. Review recommended.</p>
+                        {% elif scan_log.overall_plagiarism_percentage > 30 %}
+                        <p class="warning">◼ Moderate plagiarism risk detected</p>
+                        <p>Some content matches other sources. Verification suggested.</p>
+                        {% else %}
+                        <p class="success">▼ Low plagiarism risk detected</p>
+                        <p>Minimal matches found. Document appears original.</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    <div class="plagiarism-details">
+                        <p><small>Analysis based on comparison with {{ scan_results|length }} potential sources</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Content Analysis Card -->
+            <div class="summary-card">
+                <h3>AI Content Analysis</h3>
+                <div class="ai-metric">
+                    {% if ai_probability_score is not None %}
+                    <p>AI-Generated Content Probability:</p>
+                    <div class="ai-score" style="font-size: 2em; font-weight: bold; 
+                            {% if ai_probability_score > 50 %}color: #dc3545;{% else %}color: #28a745;{% endif %}"> {{
+                        ai_probability_score|floatformat:2 }}%
+                    </div>
+
+                    <div class="ai-assessment">
+                        {% if ai_probability_score > 50 %}
+                        <p class="error">▲ High probability of AI generation</p>
+                        <p>This document shows strong signs of AI-assisted composition.</p>
+                        {% else %}
+                        <p class="success">▼ Likely human-authored</p>
+                        <p>This document appears to be primarily human-written.</p>
+                        {% endif %}
+                    </div>
+
+                    {% if burstiness_score is not None %}
+                    <div class="burstiness-metric">
+                        <p>Burstiness Score: <strong>{{ burstiness_score|floatformat:4 }}</strong></p>
+                        <p><small>(Measures writing pattern variation. Range: 0-1, higher = more human-like)</small></p>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <p class="error">AI detection analysis unavailable</p>
+                    <p><small>Could not process document for AI content analysis</small></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Lexical Analysis -->
+        {% if top_words %}
+        <div class="right-column">
+            <div class="summary-card">
+                <h3>Lexical Analysis</h3>
+                <p>Top 10 most frequently used words in this document:</p>
+                <div class="chart-container">
+                    <canvas id="wordFrequencyChart"></canvas>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Detailed Matches Section -->
+{% if scan_results %}
+<h2>Detailed Source Matches</h2>
+<div class="table-responsive">
+    <table class="matches-table">
+        <thead>
+            <tr>
+                <th width="25%">Source Title</th>
+                <th width="35%">Description</th>
+                <th width="25%">URL</th>
+                <th width="15%">Similarity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in scan_results %}
+            <tr>
+                <td class="break">
+                    <input type="hidden" class="scanResult" name="scanResult" id="scanResult{{ result.id }}"
+                        value="{{ result.id }}" />
+                    {{ result.match_title|default:"Untitled Source" }}
+                </td>
+                <td class="break">{{ result.match_desc|default:"No description available" }}</td>
+                <td class="break"> <a href="{{ result.match_url }}" target="_blank">
+                        {{result.match_display_url|truncatechars:40 }}</a> </td>
+                <td class="break"><img src="{% static 'plag/icon/AjaxLoader.gif' %}" alt="Analyzing..." /></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Text Sample Section -->
+{% if text_snippet %}
+<h2>Analyzed Text Sample</h2>
+<div class="text-sample">
+    <p>The following text excerpt was analyzed:</p>
+    <pre>{{ text_snippet }}</pre>
+    <p class="text-muted no-print"><small>Sample limited to 500 characters for demonstration</small></p>
+</div>
+{% endif %}
+
+<!-- Print Footer -->
+<div class="print-footer" style="display: none;">
+    <p>This report is confidential and intended solely for the use of the individual or entity to whom it is addressed.
+    </p>
+    <p>Generated by CopyCat Checker • &copy; {% now "Y" %} All Rights Reserved</p>
+</div>
+
+<!-- Print Button -->
+<div class="text-center no-print">
+    <button class="print-button" onclick="preparePrint()">
+        <i class="fas fa-print"></i> Print Report
+    </button>
+</div>
+
+{% endblock %}
+
+{% block pagescripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="text/javascript">
+    // ===== GLOBAL VARIABLES =====
+    var numResults = {{ scan_results| length }};
+    var numPostProcd = 0;
+    var numFalsePos = 0;
+    var lid = {{ scan_log.id }};
+    var interval = -1;
+    var currIdx = 0;
+    var hideFalsePos = true;
+    var allResultsData = [];
+    var tableBody = $('table tbody');
+    var averagePlagiarismPercentElement = $('#averagePlagiarismPercent');
+    var overallPlagiarismDisplayElement = $('#overallPlagiarismDisplay');
+
+    // ===== CHART INITIALIZATION =====
+    function initWordFrequencyChart() {
+        {% if top_words %}
+        var ctx = document.getElementById('wordFrequencyChart').getContext('2d');
+        var labels = [];
+        var data = [];
+        var backgroundColors = [];
+
+        {% for word, count in top_words %}
+        labels.push("{{ word }}");
+        data.push({{ count }});
+    backgroundColors.push(getRandomColor());
+    {% endfor %}
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Word Frequency',
+                data: data,
+                backgroundColor: backgroundColors,
+                borderColor: '#495057',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Occurrences',
+                        font: {
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Words',
+                        font: {
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            return context.parsed.y + ' occurrence' + (context.parsed.y !== 1 ? 's' : '');
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    function getRandomColor() {
+        var colors = [
+            '#4e79a7', '#f28e2b', '#e15759', '#76b7b2',
+            '#59a14f', '#edc948', '#b07aa1', '#ff9da7',
+            '#9c755f', '#bab0ac'
+        ];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+    {% endif %}
+}
+
+    // ===== PRINT FUNCTION =====
+    function preparePrint() {
+        // Show print-specific elements
+        $('.print-header, .print-footer').show();
+
+        // Add a small delay to ensure elements are visible before printing
+        setTimeout(function () {
+            window.print();
+
+            // Hide print elements again after printing
+            setTimeout(function () {
+                $('.print-header, .print-footer').hide();
+            }, 500);
+        }, 200);
+    }
+
+    // ===== RESULT PROCESSING FUNCTIONS =====
+    function initializeResultsData() {
+        $('table tbody tr').each(function () {
+            var rowElement = $(this);
+            var scanResultId = rowElement.find('.scanResult').val();
+            allResultsData.push({
+                id: scanResultId,
+                rowElement: rowElement,
+                percDup: null,
+                isFalsePositive: false
+            });
+        });
+    }
+
+    function sortAndRenderTable() {
+        allResultsData.sort(function (a, b) {
+            if (a.percDup === null && b.percDup === null) return 0;
+            if (a.percDup === null) return 1;
+            if (b.percDup === null) return -1;
+            if (a.percDup < 0 && b.percDup < 0) return 0;
+            if (a.percDup < 0) return 1;
+            if (b.percDup < 0) return -1;
+            return b.percDup - a.percDup;
+        });
+
+        tableBody.empty();
+        $.each(allResultsData, function (index, item) {
+            tableBody.append(item.rowElement);
+            if (item.isFalsePositive && hideFalsePos) {
+                item.rowElement.addClass("falsePositive").removeClass("show-fp");
+            } else {
+                item.rowElement.removeClass("falsePositive").addClass("show-fp");
+            }
+        });
+    }
+
+    function batchPostProcess() {
+        var elementsToProcess = [];
+        for (var i = 0; i < 3; i++) {
+            if (currIdx < allResultsData.length) {
+                elementsToProcess.push(allResultsData[currIdx]);
+                currIdx++;
+            } else {
+                break;
+            }
+        }
+
+        if (elementsToProcess.length === 0 && numPostProcd === numResults) {
+            clearInterval(interval);
+            fetchOverallPlagiarismPercentage(true);
+            return;
+        }
+
+        if (elementsToProcess.length > 0) {
+            $.each(elementsToProcess, function (index, itemData) {
+                $.ajax({
+                    dataType: "json",
+                    url: "{% url 'index_trial' %}",
+                    data: { id1: lid, id2: itemData.id },
+                    async: true,
+                    success: function (data) {
+                        processResultItem(data);
+                    },
+                    error: function (xhr, status, error) {
+                        handleResultError(itemData);
+                    }
+                });
+            });
+        }
+    }
+
+    function processResultItem(data) {
+        var percDup = parseFloat(data.perc_dup);
+        var updatedItem = allResultsData.find(function (el) {
+            return el.id == data.id;
+        });
+
+        if (updatedItem) {
+            updatedItem.percDup = percDup;
+            numPostProcd++;
+            $("#resultPostProcd").html(numPostProcd);
+
+            var row = updatedItem.rowElement;
+            if (percDup <= 0) {
+                updatedItem.isFalsePositive = true;
+                numFalsePos++;
+                $('.falsePositiveMsg').show(250);
+                $('.resultFalsePos').html(numFalsePos);
+                row.find('td:last').html(percDup === 0 ? 'No match' : 'False positive');
+            } else {
+                updatedItem.isFalsePositive = false;
+                row.find('td:last').html(percDup.toFixed(1) + "%");
+            }
+
+            updateOverallPlagiarismDisplay(data.overall_plagiarism_percentage);
+            sortAndRenderTable();
+        }
+    }
+
+    function handleResultError(itemData) {
+        var updatedItem = allResultsData.find(function (el) {
+            return el.id == itemData.id;
+        });
+        if (updatedItem) {
+            updatedItem.percDup = -2;
+            updatedItem.isFalsePositive = true;
+            updatedItem.rowElement.find('td:last').html('Error');
+            numPostProcd++;
+            $("#resultPostProcd").html(numPostProcd);
+            sortAndRenderTable();
+        }
+    }
+
+    function updateOverallPlagiarismDisplay(percentageString) {
+        if (percentageString !== undefined && percentageString !== null && percentageString !== '-1') {
+            const percentage = parseFloat(percentageString);
+            const formattedPercentage = percentage.toFixed(2) + "%";
+            averagePlagiarismPercentElement.html(formattedPercentage);
+            overallPlagiarismDisplayElement.html(formattedPercentage);
+
+            overallPlagiarismDisplayElement.removeClass('high-plagiarism medium-plagiarism low-plagiarism');
+            if (percentage > 70) {
+                overallPlagiarismDisplayElement.addClass('high-plagiarism');
+            } else if (percentage > 30) {
+                overallPlagiarismDisplayElement.addClass('medium-plagiarism');
+            } else {
+                overallPlagiarismDisplayElement.addClass('low-plagiarism');
+            }
+        } else {
+            averagePlagiarismPercentElement.html("Processing...");
+            overallPlagiarismDisplayElement.html("Processing...");
+        }
+    }
+
+    function fetchOverallPlagiarismPercentage(isFinalCall = false) {
+        $.ajax({
+            dataType: "json",
+            url: "{% url 'index_trial' %}",
+            data: { id1: lid },
+            success: function (data) {
+                updateOverallPlagiarismDisplay(data.overall_plagiarism_percentage);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching final overall plagiarism percentage:", status, error);
+                averagePlagiarismPercentElement.html("Error");
+                overallPlagiarismDisplayElement.html("Error");
+            },
+            complete: function () {
+                if (isFinalCall && overallPlagiarismDisplayElement.html() === "Processing...") {
+                    updateOverallPlagiarismDisplay("0.00");
+                }
+            }
+        });
+    }
+
+    // ===== DOCUMENT READY =====
+    $(function () {
+        // Initialize results processing
+        initializeResultsData();
+        sortAndRenderTable();
+        interval = setInterval(batchPostProcess, 3000);
+
+        // Initialize chart
+        initWordFrequencyChart();
+
+        // Set up UI interactions
+        $("#showHideFalsePos").click(function () {
+            hideFalsePos = !hideFalsePos;
+            $('#showHideFalsePos').html(hideFalsePos ?
+                'Show the false positives anyway.' :
+                'Hide false positives.');
+            $.each(allResultsData, function (index, item) {
+                if (item.isFalsePositive) {
+                    item.rowElement.toggleClass('show-fp', !hideFalsePos);
+                }
+            });
+            sortAndRenderTable();
+        });
+
+        // Initialize overall percentage display
+        updateOverallPlagiarismDisplay(
+            "{{ scan_log.overall_plagiarism_percentage|default_if_none:'-1' }}"
+        );
+    });
+</script>
+{% endblock %}

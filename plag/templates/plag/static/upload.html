@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Document to Corpus</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .messages { list-style: none; padding: 0; }
+        .success { color: green; }
+        .error { color: red; }
+        form { margin-top: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 5px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="file"], input[type="text"] { margin-bottom: 15px; padding: 8px; border: 1px solid #ddd; border-radius: 3px; width: 100%; box-sizing: border-box; }
+        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>Upload Document to Plagiarism Corpus</h1>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }} {# Renders form fields as paragraphs #}
+        <button type="submit">Upload Document</button>
+    </form>
+
+    <p><a href="/">Go to Home (or where your plagiarism check interface is)</a></p>
+</body>
+</html>

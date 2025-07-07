@@ -1,0 +1,54 @@
+{% extends 'plag/base1.html' %}
+
+{% block title %}Create Classroom{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Create New Classroom</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ form.name.label_tag }}
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.name.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.group.label_tag }}
+                            {{ form.group }}
+                            {% if form.group.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.group.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.intake.label_tag }}
+                            {{ form.intake }}
+                            {% if form.intake.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.intake.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Create Classroom</button>
+                            <a href="{% url 'lecturer_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+# This section describes your PostgreSQL database
+databases:
+  - name: plagiarism-guard-db # This is a name for the database SERVICE on Render. Choose a unique name.
+    plan: free # We'll start with the free plan.
+    databaseName: plagiarism_db # This is the actual name of your database within PostgreSQL.
+    user: plagiarism_user # This is the username for connecting to your database.
+
+# This section describes your Django web service (your actual website)
+services:
+  - type: web # This means it's a web server that serves a website.
+    name: plagiarism-guard-web # This is a name for your web SERVICE on Render. Choose a unique name.
+    runtime: python # We are deploying a Python application.
+    plan: free # We'll start with the free plan.
+    # Tells Render where to find your Django project's root (where manage.py is).
+    # '.' means the current directory (the root of your Git repository).
+    rootDir: .
+    # This is the command Render will run AFTER cloning your repo to set things up.
+    # It's our 'build.sh' script we just created.
+    buildCommand: './build.sh'
+    # This is the command Render will use to START your Django website.
+    # 'gunicorn' is our web server.
+    # 'PlagiarismGuard.wsgi:application' tells Gunicorn where to find your Django app.
+    # IMPORTANT: 'PlagiarismGuard' MUST match the name of your inner Django project folder!
+    startCommand: 'gunicorn PlagiarismGuard.wsgi:application'
+    # These are special hidden variables (environment variables) that your Django project needs.
+    envVars:
+      - key: DATABASE_URL # This variable will hold the connection info for your database.
+        fromDatabase:
+          name: plagiarism-guard-db # Link to the database service we defined above.
+          property: connectionString # Get the full connection string from that database.
+      - key: SECRET_KEY # Your Django project's secret key. Render will generate a strong one.
+        generateValue: true
+      - key: WEB_CONCURRENCY # How many "workers" Gunicorn should use. Adjust for performance.
+        value: 2 # A good starting point for free/starter plans.
+      - key: DEBUG # Confirm that DEBUG is set to False for security.
+        value: 'False'
+      - key: ALLOWED_HOSTS # The public domain name(s) your app will respond to.
+        # You'll get the exact URL from Render after deployment.
+        # For now, this is a placeholder based on your service name.

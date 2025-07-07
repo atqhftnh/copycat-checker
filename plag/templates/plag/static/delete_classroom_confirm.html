@@ -1,0 +1,14 @@
+{% extends 'main/base.html' %}
+{% block title %}Delete Classroom{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Delete Classroom</h2>
+    <p>Are you sure you want to delete the classroom <strong>{{ classroom.name }}</strong>? This action cannot be undone.</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        <a href="{% url 'lecturer_classroom_detail' classroom.id %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

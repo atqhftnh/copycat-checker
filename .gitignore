@@ -1,0 +1,30 @@
+# .gitignore
+# ----------
+# Byte-code files
+*.pyc
+__pycache__/
+
+# Virtual environment
+venv/
+.env/
+env/
+
+# Django specific
+*.log
+*.pot
+*.mo
+*.rbc
+*.sqlite3
+db.sqlite3 # Your local development database
+
+# IDE specific files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# User-uploaded media files (if you had a local media folder before S3)
+# media/
+# --------------------

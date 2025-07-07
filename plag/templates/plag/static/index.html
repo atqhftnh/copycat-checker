@@ -1,0 +1,776 @@
+{% extends 'plag/base1.html' %}
+{% load static %}
+
+{% block title %} Student Dashboard - CopyCat Checker {% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Student Dashboard Styles */
+  .student-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 16px;
+  }
+
+  .dashboard-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .dashboard-title {
+    font-size: 36px;
+    font-weight: 700;
+    background: linear-gradient(to right, #ff7d0b, #ebbe87);
+    -webkit-background-clip: text;
+    color: transparent;
+    margin-bottom: 16px;
+  }
+
+  .dashboard-subtitle {
+    color: #6b7280;
+    font-size: 18px;
+  }
+
+  /* Navigation Buttons */
+  .nav-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 48px;
+  }
+
+  .nav-btn {
+    background-color: #ebbe87;
+    color: #374151;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-btn:hover {
+    background-color: #d4a574;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(235, 190, 135, 0.4);
+  }
+
+  .nav-btn.primary {
+    background-color: #ff7d0b;
+    color: white;
+  }
+
+  .nav-btn.primary:hover {
+    background-color: rgba(255, 125, 11, 0.9);
+  }
+
+  /* Upload Section */
+  .upload-section {
+    background-color: white;
+    border-radius: 16px;
+    padding: 48px;
+    margin-bottom: 48px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(235, 190, 135, 0.2);
+  }
+
+  .upload-container {
+    max-width: 900px;
+    margin: 0 auto 48px;
+  }
+
+  .upload-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #ff7d0b;
+    margin-bottom: 32px;
+    text-align: center;
+  }
+
+  .upload-area {
+    border: 3px dashed #bebebe;
+    border-radius: 16px;
+    padding: 48px 32px;
+    text-align: center;
+    transition: all 0.3s;
+    background: linear-gradient(to bottom right,
+        rgba(156, 215, 221, 0.05),
+        rgba(235, 190, 135, 0.05));
+    cursor: pointer;
+  }
+
+  .upload-area:hover,
+  .upload-area.dragover {
+    border-color: #ff7d0b;
+    background: linear-gradient(to bottom right,
+        rgba(255, 125, 11, 0.05),
+        rgba(235, 190, 135, 0.1));
+    transform: translateY(-2px);
+  }
+
+  .upload-icon {
+    font-size: 48px;
+    color: #9cd7dd;
+    margin-bottom: 16px;
+  }
+
+  .upload-text {
+    font-size: 18px;
+    color: #4b5563;
+    margin-bottom: 16px;
+  }
+
+  .browse-link {
+    color: #ff7d0b;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .browse-link:hover {
+    color: #e56e09;
+  }
+
+  .file-list {
+    margin-top: 24px;
+  }
+
+  .file-item {
+    background-color: rgba(156, 215, 221, 0.1);
+    border: 1px solid #9cd7dd;
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .file-icon {
+    color: #9cd7dd;
+    font-size: 20px;
+  }
+
+  .file-info {
+    flex: 1;
+  }
+
+  .file-name {
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .file-size {
+    font-size: 14px;
+    color: #6b7280;
+  }
+
+  /* Submit Button */
+  .submit-btn {
+    background-color: #9cd7dd;
+    color: #374151;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 32px auto 0;
+  }
+
+  .submit-btn:hover {
+    background-color: #67a3af;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(156, 215, 221, 0.4);
+  }
+
+  .submit-btn:disabled {
+    background-color: #d1d5db;
+    color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Loading Spinner */
+  .loading-spinner {
+    display: none;
+    text-align: center;
+    margin-top: 24px;
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid #ff7d0b;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .loading-text {
+    color: #6b7280;
+    font-size: 16px;
+  }
+
+  /* Join Classroom Button */
+  .join-btn {
+    background-color: #059669;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .join-btn:hover {
+    background-color: #047857;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+  }
+
+  /* Action Buttons */
+  .card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .action-btn {
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  .btn-view {
+    background-color: #3b82f6;
+    color: white;
+  }
+
+  .btn-view:hover {
+    background-color: #2563eb;
+    transform: translateY(-1px);
+  }
+
+  .btn-delete {
+    background-color: #dc2626;
+    color: white;
+  }
+
+  .btn-delete:hover {
+    background-color: #b91c1c;
+    transform: translateY(-1px);
+  }
+
+  /* Modal Styles */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-content {
+    background: white;
+    margin: 10% auto;
+    padding: 32px;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 16px;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    animation: modalSlideIn 0.3s ease-out;
+  }
+
+  @keyframes modalSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #6b7280;
+    background: none;
+    border: none;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.15s;
+  }
+
+  .modal-close:hover {
+    background-color: #f3f4f6;
+    color: #374151;
+  }
+
+  .modal-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .modal-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+
+  .modal-input:focus {
+    outline: none;
+    border-color: #ff7d0b;
+    box-shadow: 0 0 0 3px rgba(255, 125, 11, 0.1);
+  }
+
+  .modal-btn {
+    background-color: #9cd7dd;
+    color: #374151;
+    border: none;
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .modal-btn:hover {
+    background-color: #67a3af;
+    color: white;
+  }
+
+  /* Classroom Section */
+  .classroom-section {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(235, 190, 135, 0.2);
+  }
+
+  .classroom-container {
+    max-width: 900px;
+    margin: 0 auto 64px;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+    gap: 16px;
+  }
+
+  .section-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-icon {
+    font-size: 28px;
+    color: #9cd7dd;
+  }
+
+  .join-btn {
+    background-color: #059669;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .join-btn:hover {
+    background-color: #047857;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+  }
+
+  .classroom-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 24px;
+  }
+
+  .classroom-card {
+    background: linear-gradient(to bottom right, rgba(156, 215, 221, 0.05), rgba(235, 190, 135, 0.05));
+    border: 1px solid rgba(156, 215, 221, 0.2);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+
+  .classroom-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(156, 215, 221, 0.2);
+    border-color: #9cd7dd;
+  }
+
+  .classroom-icon {
+    font-size: 48px;
+    color: #ff7d0b;
+    background-color: rgba(255, 125, 11, 0.1);
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .classroom-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 8px;
+  }
+
+  .classroom-info {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .classroom-code {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: #4b5563;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 16px;
+  }
+
+  .action-btn:hover {
+    background-color: #2563eb;
+    transform: translateY(-1px);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: #6b7280;
+  }
+
+  .empty-icon {
+    font-size: 48px;
+    color: #d1d5db;
+    margin-bottom: 16px;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .upload-section {
+      padding: 32px 24px;
+    }
+
+    .upload-area {
+      padding: 32px 16px;
+    }
+
+    .dashboard-title {
+      font-size: 28px;
+    }
+
+    .nav-buttons {
+      justify-content: center;
+    }
+
+    .classroom-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .classroom-card {
+      flex-direction: column;
+      text-align: center;
+      gap: 16px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="dashboard-container">
+  <div class="dashboard-header">
+    <h1 class="dashboard-title">Student Dashboard</h1>
+    <p class="dashboard-subtitle">
+      Upload assignments, check plagiarism, and manage your classrooms
+    </p>
+  </div>
+
+  <!-- Navigation Buttons -->
+  <div class="nav-buttons">
+    <button class="nav-btn"><i class="fas fa-history"></i> History</button>
+    <button class="nav-btn"><i class="fas fa-file-alt"></i> Reports</button>
+    <button class="nav-btn"><i class="fas fa-chalkboard-teacher"></i> Classrooms</button>
+  </div>
+
+  <!-- Upload Section -->
+  <div class="upload-container"> <!-- ✅ NEW WRAPPER -->
+    <div class="upload-section">
+      <h2 class="upload-title">Upload Your Assignment</h2>
+      <form id="plagiarismForm" method="POST" action="{% url 'index_trial' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="upload-area" id="upload-area">
+          <div class="upload-icon">
+            <i class="fas fa-cloud-upload-alt"></i>
+          </div>
+          <p class="upload-text">
+            Drag & Drop your file here or <span id="browseLink" class="browse-link">browse files</span>
+          </p>
+          <input type="file" id="fileInput" name="plagFile" accept="{{ accepted_file_exts }}" hidden required />
+          <div id="fileList" class="file-list"></div>
+        </div>
+
+        <button type="submit" name="submit" class="submit-btn" id="submitBtn">
+          <i class="fas fa-search"></i> Check Plagiarism
+        </button>
+
+        <div id="loadingSpinner" class="loading-spinner">
+          <div class="spinner"></div>
+          <p class="loading-text">Analyzing your document...</p>
+        </div>
+      </form>
+    </div>
+  </div> <!-- ✅ END WRAPPER -->
+
+  <!-- Join Classroom Modal -->
+  <div id="joinClassroomModal" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <h4 class="modal-title">Join Classroom</h4>
+      <form method="POST" action="{% url 'join_classroom' %}">
+        {% csrf_token %}
+        <input type="text" name="join_code" placeholder="Enter classroom join code" required class="modal-input" />
+      </form>
+    </div>
+  </div>
+
+  <!-- Classroom Section -->
+  <div class="classroom-container"> <!-- ✅ NEW WRAPPER -->
+    <div class="classroom-section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <i class="fas fa-chalkboard section-icon"></i>
+          Joined Classrooms
+        </h2>
+        <button type="button" class="join-btn" onclick="openModal()">
+          <i class="fas fa-plus"></i> Join New Classroom
+        </button>
+      </div>
+
+      {% if classrooms %}
+      <div class="classroom-grid">
+        {% for classroom in classrooms %}
+        <div class="classroom-card">
+          <div class="classroom-icon">
+            <i class="fas fa-chalkboard"></i>
+          </div>
+
+          <h3 class="classroom-name">
+            {{ classroom.name }}
+            {% if classroom.group %}[{{ classroom.group }}]{% endif %}
+            {% if classroom.intake %} ({{ classroom.intake }}){% endif %}
+          </h3>
+
+          <p class="classroom-stats">
+            <i class="fas fa-user-graduate"></i>
+            Lecturer: {{ classroom.lecturer.userprofile.full_name }}
+          </p>
+
+          <div class="classroom-code">
+            <i class="fas fa-key"></i> Code: {{ classroom.join_code }}
+          </div>
+
+          <div class="card-actions">
+            <a href="{% url 'student_classroom_detail' classroom.id %}" class="action-btn btn-view">
+              <i class="fas fa-eye"></i> View
+            </a>
+
+            <form method="post" action="{% url 'leave_classroom' classroom.id %}"
+              onsubmit="return confirm('Are you sure you want to leave this classroom?');">
+              {% csrf_token %}
+              <button type="submit" class="action-btn btn-delete">
+                <i class="fas fa-sign-out-alt"></i> Leave
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-icon"><i class="fas fa-door-open"></i></div>
+        <div class="empty-text">You're not in any classrooms yet</div>
+        <div class="empty-subtext">Ask your lecturer for a join code.</div>
+      </div>
+      {% endif %}
+    </div>
+  </div> <!-- ✅ END WRAPPER -->
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // File Upload Functionality
+  document.addEventListener("DOMContentLoaded", function () {
+    const uploadArea = document.getElementById("upload-area");
+    const fileInput = document.getElementById("fileInput");
+    const browseLink = document.getElementById("browseLink");
+    const fileList = document.getElementById("fileList");
+    const submitBtn = document.getElementById("submitBtn");
+    const loadingSpinner = document.getElementById("loadingSpinner");
+    const form = document.getElementById("plagiarismForm");
+
+    browseLink.addEventListener("click", () => fileInput.click());
+
+    uploadArea.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      uploadArea.classList.add("dragover");
+    });
+
+    uploadArea.addEventListener("dragleave", function (e) {
+      e.preventDefault();
+      uploadArea.classList.remove("dragover");
+    });
+
+    uploadArea.addEventListener("drop", function (e) {
+      e.preventDefault();
+      uploadArea.classList.remove("dragover");
+
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        fileInput.files = files;
+        displayFiles(files);
+      }
+    });
+
+    fileInput.addEventListener("change", function (e) {
+      if (e.target.files.length > 0) {
+        displayFiles(e.target.files);
+      }
+    });
+
+    function displayFiles(files) {
+      fileList.innerHTML = "";
+      Array.from(files).forEach((file) => {
+        const fileItem = document.createElement("div");
+        fileItem.className = "file-item";
+        const fileSize = (file.size / 1024 / 1024).toFixed(2) + " MB";
+        fileItem.innerHTML = `
+            <div class="file-icon"><i class="fas fa-file-alt"></i></div>
+            <div class="file-info">
+              <div class="file-name">${file.name}</div>
+              <div class="file-size">${fileSize}</div>
+            </div>`;
+        fileList.appendChild(fileItem);
+      });
+    }
+
+    form.addEventListener("submit", function (e) {
+      if (fileInput.files.length === 0) {
+        e.preventDefault();
+        alert("Please select a file to upload.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      loadingSpinner.style.display = "block";
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    });
+  });
+
+  function openModal() {
+    document.getElementById("joinClassroomModal").style.display = "block";
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeModal() {
+    document.getElementById("joinClassroomModal").style.display = "none";
+    document.body.style.overflow = "auto";
+  }
+
+  document.getElementById("joinClassroomModal").addEventListener("click", function (e) {
+    if (e.target === this) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      closeModal();
+    }
+  });
+</script>
+{% endblock %}

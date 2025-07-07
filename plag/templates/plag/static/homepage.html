@@ -1,0 +1,453 @@
+{% extends 'plag/base1.html' %}
+{% block title %}Home - CopyCat Checker{%endblock %}
+{% block content %}
+{% load static %}
+
+<style>
+  /* Hero Section */
+  .hero {
+    padding: 96px 16px;
+    text-align: center;
+  }
+
+  .hero-content {
+    max-width: 896px;
+    margin: 0 auto;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: rgba(255, 125, 11, 0.1);
+    border: 1px solid rgba(255, 125, 11, 0.2);
+    border-radius: 9999px;
+    color: #ff7d0b;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    margin-bottom: 24px;
+  }
+
+  .hero-title {
+    font-size: 48px;
+    font-weight: bold;
+    color: #111827;
+    margin-bottom: 24px;
+    line-height: 1.1;
+  }
+
+  .gradient-text {
+    background: linear-gradient(to right, #ff7d0b, #ebbe87);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  .hero-subtitle {
+    font-size: 20px;
+    color: #4b5563;
+    margin-bottom: 32px;
+    max-width: 672px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-large {
+    padding: 16px 32px;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-large.primary {
+    background-color: #ff7d0b;
+    color: white;
+  }
+
+  .btn-large.primary:hover {
+    background-color: rgba(255, 125, 11, 0.9);
+  }
+
+  .btn-large.secondary {
+    background-color: white;
+    color: #374151;
+    border: 1px solid #bebebe;
+  }
+
+  .btn-large.secondary:hover {
+    background-color: rgba(190, 190, 190, 0.1);
+  }
+
+  /* Features Section */
+  .features {
+    padding: 64px 16px;
+  }
+
+  .features-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .features-title {
+    font-size: 36px;
+    font-weight: bold;
+    color: #111827;
+    margin-bottom: 16px;
+  }
+
+  .features-subtitle {
+    font-size: 18px;
+    color: #4b5563;
+    max-width: 672px;
+    margin: 0 auto;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .feature-card {
+    background-color: white;
+    border: 1px solid rgba(235, 190, 135, 0.2);
+    border-radius: 12px;
+    padding: 24px;
+    transition: box-shadow 0.3s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .feature-card:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  .feature-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    font-size: 24px;
+  }
+
+  .feature-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #111827;
+    margin-bottom: 12px;
+  }
+
+  .feature-description {
+    color: #4b5563;
+    line-height: 1.6;
+  }
+
+  /* Action Section */
+  .actions {
+    padding: 64px 16px;
+  }
+
+  .actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .action-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    border: 1px solid rgba(235, 190, 135, 0.2);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .action-card.upload {
+    background: linear-gradient(to bottom right,
+        rgba(255, 125, 11, 0.05),
+        rgba(235, 190, 135, 0.1));
+    border-color: rgba(255, 125, 11, 0.2);
+  }
+
+  .action-card.classroom {
+    background: linear-gradient(to bottom right,
+        rgba(156, 215, 221, 0.05),
+        rgba(235, 190, 135, 0.1));
+    border-color: rgba(156, 215, 221, 0.2);
+  }
+
+  .action-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 32px;
+  }
+
+  .action-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #111827;
+    margin-bottom: 16px;
+  }
+
+  .action-description {
+    color: #4b5563;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .action-btn {
+    width: 100%;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+
+  .btn-upload {
+    background-color: #ff7d0b;
+    color: white;
+    border: none;
+  }
+
+  .btn-upload:hover {
+    background-color: rgba(255, 125, 11, 0.9);
+  }
+
+  .btn-classroom {
+    background-color: white;
+    color: #9cd7dd;
+    border: 1px solid #9cd7dd;
+  }
+
+  .btn-classroom:hover {
+    background-color: rgba(156, 215, 221, 0.1);
+  }
+
+  /* Trust Section */
+  .trust {
+    padding: 64px 16px;
+  }
+
+  .trust-content {
+    background-color: white;
+    border: 1px solid rgba(235, 190, 135, 0.2);
+    border-radius: 16px;
+    padding: 48px;
+    text-align: center;
+    max-width: 1000px;
+    margin: 0 auto;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .trust-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #111827;
+    margin-bottom: 16px;
+  }
+
+  .trust-subtitle {
+    color: #4b5563;
+    margin-bottom: 32px;
+  }
+
+  .trust-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 32px;
+  }
+
+  .stat-number {
+    font-size: 36px;
+    font-weight: bold;
+    color: #ff7d0b;
+    margin-bottom: 8px;
+  }
+
+  .stat-label {
+    color: #4b5563;
+  }
+
+  /* Responsive Design */
+  @media (min-width: 768px) {
+    .hero-title {
+      font-size: 60px;
+    }
+
+    .hero-buttons {
+      flex-wrap: nowrap;
+    }
+
+    .features-title {
+      font-size: 48px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .actions-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .trust-content {
+      padding: 24px;
+    }
+  }
+</style>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="badge">Academic Integrity Tool</div>
+
+    <h1 class="hero-title">
+      Welcome to <span class="gradient-text">CopyCat Checker</span>
+    </h1>
+
+    <p class="hero-subtitle">
+      Academic integrity made simple. Upload your paper, get your report, and
+      stay original.
+    </p>
+
+    <div class="hero-buttons">
+      <a href="/login/" class="btn-large primary">Get Started</a>
+      <a href="{% static 'docs/CopyCat_Checker_User_Manual.docx' %}" class="btn-large secondary" target="_blank">Learn More</a>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="features">
+  <div class="features-header">
+    <h2 class="features-title">Features in CopyCat Checker</h2>
+    <p class="features-subtitle">
+      Comprehensive plagiarism detection designed specifically for academic
+      environments
+    </p>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon" style="background-color: rgba(255, 125, 11, 0.1); color: #ff7d0b">
+        🛡️
+      </div>
+      <h3 class="feature-title">University Focused</h3>
+      <p class="feature-description">
+        Designed for students to check their work with a simple, accurate
+        similarity checker.
+      </p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon" style="background-color: rgba(156, 215, 221, 0.2); color: #9cd7dd">
+        🌐
+      </div>
+      <h3 class="feature-title">Google-Powered Search</h3>
+      <p class="feature-description">
+        Finds matching sources using advanced online search methods.
+      </p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon" style="background-color: rgba(235, 190, 135, 0.3); color: #ff7d0b">
+        📄
+      </div>
+      <h3 class="feature-title">Detailed Reports</h3>
+      <p class="feature-description">
+        Highlights copied content with links to sources and a full similarity
+        score.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Action Sections -->
+<section class="actions">
+  <div class="actions-grid">
+    <!-- Upload Document -->
+    <div id="upload" class="action-card upload">
+      <div class="action-icon" style="background-color: rgba(255, 125, 11, 0.1); color: #ff7d0b">
+        📤
+      </div>
+      <h3 class="action-title">Upload Your Document</h3>
+      <p class="action-description">
+        Easily upload your PDF or DOCX and receive a plagiarism analysis report
+        in minutes.
+      </p>
+      <a href="/login/" class="action-btn btn-upload"> 📤 Upload Document </a>
+    </div>
+
+    <!-- Join Classroom -->
+    <div id="classroom" class="action-card classroom">
+      <div class="action-icon" style="background-color: rgba(156, 215, 221, 0.2); color: #9cd7dd">
+        👥
+      </div>
+      <h3 class="action-title">Join Classroom</h3>
+      <p class="action-description">
+        Lecturers can manage submissions and students can track feedback
+        securely.
+      </p>
+      <a href="/login/" class="action-btn btn-classroom">
+        👥 Join Classroom
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Trust Indicators -->
+<section class="trust">
+  <div class="trust-content">
+    <h3 class="trust-title">Trusted by Academic Institutions</h3>
+    <p class="trust-subtitle">
+      Join thousands of students and educators maintaining academic integrity
+    </p>
+
+    <div class="trust-stats">
+      <div>
+        <div class="stat-number">10K+</div>
+        <div class="stat-label">Documents Checked</div>
+      </div>
+      <div>
+        <div class="stat-number">500+</div>
+        <div class="stat-label">Universities</div>
+      </div>
+      <div>
+        <div class="stat-number">99.9%</div>
+        <div class="stat-label">Accuracy Rate</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
