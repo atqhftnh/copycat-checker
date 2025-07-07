@@ -89,78 +89,61 @@ def detect_ai_content(text):
     
 
 def get_winston_ai_prediction(text):
-    if not text.strip():
-        return None
-
     api_key, api_url = _get_winston_config()
+
     if not api_key:
-        logger.error("WinstonAI API Key not set in environment variables for get_winston_ai_prediction.")
-        return None, "Developer Error: WinstonAI API Key is missing."
+        logger.error("WinstonAI API key is not set.")
+        return None, "API Key Missing" # Return None for score, specific message for label
+
+    if not text or not text.strip():
+        logger.info("No text provided for WinstonAI analysis.")
+        return None, "No Text Provided"
 
     headers = {
         "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-        "User-Agent": "CopycatChecker/1.0 (Django-get_winston_ai_prediction)" # Good practice
+        "Content-Type": "application/json"
     }
-    
     payload = {
-        "text": text,
-        "sentences": True,
-        "language": "en"
+        "text": text
     }
 
     try:
-        logger.debug(f"Sending text (first 50 chars): '{text[:50]}...' to WinstonAI at {api_url}")
-        response = requests.post(api_url, headers=headers, json=payload, timeout=60) # Added timeout
-        logger.debug(f"Received response from WinstonAI: {response.status_code} - {response.text}")
-
-        response.raise_for_status() # Raises HTTPError for 4xx/5xx responses
+        response = requests.post(api_url, headers=headers, json=payload, timeout=60)
+        response.raise_for_status() # This will raise an HTTPError for 4xx/5xx responses
 
         data = response.json()
-        
-        if 'score' in data:
-            human_score = data['score'] 
-            ai_probability = (100 - human_score) / 100.0 
-            return ai_probability, None # Return score and no error message
+        ai_score = data.get('score')
+        ai_label = data.get('label')
+
+        return ai_score, ai_label
+
+    except requests.exceptions.HTTPError as e:
+        # Catch specific HTTP errors
+        if e.response.status_code == 403:
+            logger.warning(f"WinstonAI API 403 Forbidden: Check API key or account limits. Error: {e.response.text}")
+            return None, "API Forbidden (Check Key/Credits)" # Specific label for 403
+        elif e.response.status_code == 400:
+            logger.error(f"WinstonAI API 400 Bad Request: Invalid payload. Error: {e.response.text}")
+            return None, "API Bad Request"
         else:
-            logger.error(f"WinstonAI API response did not contain expected 'score' field. Response: {data}")
-            return None, "WinstonAI API response format invalid."
+            logger.error(f"WinstonAI API HTTP Error {e.response.status_code}: {e.response.text}")
+            return None, f"API Error {e.response.status_code}" # Generic HTTP error
 
-    except requests.exceptions.HTTPError as http_err: 
-        status_code = http_err.response.status_code
-        response_text = http_err.response.text if http_err.response else "No response body."
+    except requests.exceptions.ConnectionError as e:
+        logger.error(f"WinstonAI API Connection Error: Failed to establish connection. Error: {e}")
+        return None, "Network Unreachable" # Previously seen error
 
-        logger.error(f"WinstonAI API HTTP Error in get_winston_ai_prediction ({status_code}): {response_text}")
+    except requests.exceptions.Timeout as e:
+        logger.error(f"WinstonAI API Timeout Error: Request timed out. Error: {e}")
+        return None, "API Timeout"
 
-        # --- *** THIS IS THE CRUCIAL PART FOR CUSTOM MESSAGE *** ---
-        if status_code == 403: # Forbidden
-            # Check if the response text contains specific keywords from WinstonAI
-            # WinstonAI might send "Insufficient credits", "Limit exceeded", "Invalid token", etc.
-            if "credits" in response_text.lower() or "token" in response_text.lower() or "forbidden" in response_text.lower() or "limit" in response_text.lower():
-                logger.warning("WinstonAI 403 detected, likely due to insufficient tokens/credits.")
-                return None, "Insufficient Token to Check for AI Generated. Please contact Developer."
-            else:
-                # Other 403 reasons (e.g., specific API key issues not related to tokens)
-                return None, f"WinstonAI API access denied: {response_text}"
-        elif status_code == 400: # Bad Request (e.g., invalid file format, missing parameter)
-            return None, f"WinstonAI API Bad Request: {response_text}"
-        elif status_code == 422: # Unprocessable Entity (common for validation errors like text too long)
-            return None, f"WinstonAI API Unprocessable Entity: {response_text}"
-        elif status_code >= 500: # Server-side errors from WinstonAI
-            return None, f"WinstonAI API Server Error. Please try again later. Response: {response_text}"
-        else:
-            # Catch-all for other 4xx errors
-            return None, f"WinstonAI API Error ({status_code}): {response_text}"
+    except requests.exceptions.RequestException as e:
+        logger.error(f"WinstonAI API Generic Request Error: {e}")
+        return None, "API Request Failed"
 
-    except requests.exceptions.ConnectionError as conn_err:
-        logger.error(f"WinstonAI API Connection Error in get_winston_ai_prediction: {conn_err}")
-        return None, "Could not connect to WinstonAI API. Please check internet connection or API status."
-    except requests.exceptions.Timeout as timeout_err:
-        logger.error(f"WinstonAI API Timeout Error in get_winston_ai_prediction: {timeout_err}")
-        return None, "WinstonAI API request timed out. The service might be slow."
-    except Exception as e:
-        logger.exception(f"An unexpected error occurred in get_winston_ai_prediction: {e}")
-        return None, f"An unexpected error occurred during AI check. Error: {str(e)}"
+    except ValueError as e: # Catch JSON decoding errors
+        logger.error(f"WinstonAI API response not valid JSON. Error: {e}")
+        return None, "Invalid API Response"
 
 
 def calculate_burstiness(text):
