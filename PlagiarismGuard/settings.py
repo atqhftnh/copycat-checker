@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 from pathlib import Path
 import dj_database_url
+import dotenv
+
+dotenv.load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -22,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'a_very_long_random_string_for_local_dev_ONLY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = ['copycat-checker.onrender.com', 'localhost', '127.0.0.1']
 
@@ -76,7 +79,8 @@ WSGI_APPLICATION = 'PlagiarismGuard.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         # Look for a special variable called 'DATABASE_URL'
-        default=os.environ.get('DATABASE_URL'),
+        # Provide a local SQLite default if DATABASE_URL is not set
+        default=os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite3'),
         # Keep database connections alive for a bit
         conn_max_age=600
     )
@@ -91,19 +95,20 @@ TIME_ZONE = 'UTC' # Keep UTC, recommended for Django projects
 
 USE_I18N = True # Keep True
 
-USE_L10N = True # Keep True, but note it's deprecated in Django 4.0 (use USE_TZ for datetime formatting)
+# USE_L10N = True # Keep True, but note it's deprecated in Django 4.0 (use USE_TZ for datetime formatting)
 
 USE_TZ = True # Keep True, essential for timezone-aware datetimes
 
-PDF_TO_TEXT = '/usr/bin/pdftotext'  # Ensure this path is correct and accessible
+PDF_TO_TEXT = os.environ.get('PDF_TO_TEXT_PATH', '/usr/bin/pdftotext')  # Ensure this path is correct and accessible
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.2/howto/static-files/
+# https://docs.djangoproject.com/en/4.2/topics/settings/
+# https://docs.djangoproject.com/en/4.2/ref/settings/
 
 STATIC_URL = '/static/'
 # ADDED STATIC_ROOT for collectstatic (important for deployment)
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # AWS S3 Settings for Media Files
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
@@ -111,12 +116,14 @@ AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
 AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME') # e.g., 'us-east-1'
 
+# Ensure uploaded files are publicly readable (necessary for users to view them)
+AWS_DEFAULT_ACL = 'public-read'
+
 # Construct the S3 custom domain for generating URLs
 # This assumes your bucket is in the standard S3 domain format
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
 
-# Ensure uploaded files are publicly readable (necessary for users to view them)
-AWS_DEFAULT_ACL = 'public-read'
+AWS_S3_FILE_OVERWRITE = False
 
 # Tell Django to use S3 for media file storage
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
@@ -147,3 +154,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'no-reply@copycatchecker.com'
 
 LOGOUT_REDIRECT_URL = '/login/'
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
