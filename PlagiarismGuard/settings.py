@@ -24,7 +24,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'a_very_long_random_string_for_local_d
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['copycatchecker.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['copycat-checker.onrender.com', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = (
     'django.contrib.admin',
