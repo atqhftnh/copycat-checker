@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 from pathlib import Path
 import dj_database_url
+import logging
 import dotenv
 
 dotenv.load_dotenv()
@@ -158,3 +159,58 @@ LOGOUT_REDIRECT_URL = '/login/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose', # Use verbose to get more details
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO', # Keep this INFO or DEBUG for general app logs
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        # Your app's specific loggers (if any)
+        'plag': { # Replace 'plag' with your app's name if it has a custom logger
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        # *** ADD THESE FOR BOTO3/BOTOCORE DEBUGGING ***
+        'boto3': {
+            'handlers': ['console'],
+            'level': 'DEBUG', # This is key
+            'propagate': False,
+        },
+        'botocore': {
+            'handlers': ['console'],
+            'level': 'DEBUG', # This is also key
+            'propagate': False,
+        },
+        # You might also want to debug django-storages itself
+        'storages': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    }
+}
