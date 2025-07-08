@@ -312,7 +312,7 @@
 
             <div class="user-section">
                 {% if user.is_authenticated %}
-                <span class="user-badge">{{ user.full_name }}</span>
+                <span class="user-badge">{{ user.userprofile.full_name }}</span>
                 <form method="post" action="{% url 'logout' %}" style="display: inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-secondary">Logout</button>
