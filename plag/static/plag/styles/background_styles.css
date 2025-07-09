@@ -1,0 +1,10 @@
+.has-background {
+    background-image: url('plag/img/background.jpg'); /* Adjust path relative to this CSS file */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed; /* Optional: Makes the background fixed while scrolling */
+    min-height: 100vh; /* Ensure the background covers the full viewport height */
+    margin: 0; /* Remove default body margin */
+    padding: 0; /* Remove default body padding */
+}

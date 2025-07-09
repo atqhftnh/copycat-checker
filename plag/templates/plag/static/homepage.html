@@ -3,6 +3,8 @@
 {% block content %}
 {% load static %}
 
+<link rel="stylesheet" href="{% static 'plag/styles/background_styles.css' %}">
+
 <style>
   /* Hero Section */
   .hero {
@@ -326,128 +328,131 @@
   }
 </style>
 
-<!-- Hero Section -->
-<section class="hero">
-  <div class="hero-content">
-    <div class="badge">Academic Integrity Tool</div>
+<div class="has-background">
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="badge">Academic Integrity Tool</div>
 
-    <h1 class="hero-title">
-      Welcome to <span class="gradient-text">CopyCat Checker</span>
-    </h1>
+      <h1 class="hero-title">
+        Welcome to <span class="gradient-text">CopyCat Checker</span>
+      </h1>
 
-    <p class="hero-subtitle">
-      Academic integrity made simple. Upload your paper, get your report, and
-      stay original.
-    </p>
+      <p class="hero-subtitle">
+        Academic integrity made simple. Upload your paper, get your report, and
+        stay original.
+      </p>
 
-    <div class="hero-buttons">
-      <a href="/login/" class="btn-large primary">Get Started</a>
-      <a href="{% static 'docs/CopyCat_Checker_User_Manual.docx' %}" class="btn-large secondary" target="_blank">Learn More</a>
-    </div>
-  </div>
-</section>
-
-<!-- Features Section -->
-<section id="features" class="features">
-  <div class="features-header">
-    <h2 class="features-title">Features in CopyCat Checker</h2>
-    <p class="features-subtitle">
-      Comprehensive plagiarism detection designed specifically for academic
-      environments
-    </p>
-  </div>
-
-  <div class="features-grid">
-    <div class="feature-card">
-      <div class="feature-icon" style="background-color: rgba(255, 125, 11, 0.1); color: #ff7d0b">
-        🛡️
+      <div class="hero-buttons">
+        <a href="/login/" class="btn-large primary">Get Started</a>
+        <a href="{% static 'docs/CopyCat_Checker_User_Manual.docx' %}" class="btn-large secondary" target="_blank">Learn
+          More</a>
       </div>
-      <h3 class="feature-title">University Focused</h3>
-      <p class="feature-description">
-        Designed for students to check their work with a simple, accurate
-        similarity checker.
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features">
+    <div class="features-header">
+      <h2 class="features-title">Features in CopyCat Checker</h2>
+      <p class="features-subtitle">
+        Comprehensive plagiarism detection designed specifically for academic
+        environments
       </p>
     </div>
 
-    <div class="feature-card">
-      <div class="feature-icon" style="background-color: rgba(156, 215, 221, 0.2); color: #9cd7dd">
-        🌐
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon" style="background-color: rgba(255, 125, 11, 0.1); color: #ff7d0b">
+          🛡️
+        </div>
+        <h3 class="feature-title">University Focused</h3>
+        <p class="feature-description">
+          Designed for students to check their work with a simple, accurate
+          similarity checker.
+        </p>
       </div>
-      <h3 class="feature-title">Google-Powered Search</h3>
-      <p class="feature-description">
-        Finds matching sources using advanced online search methods.
+
+      <div class="feature-card">
+        <div class="feature-icon" style="background-color: rgba(156, 215, 221, 0.2); color: #9cd7dd">
+          🌐
+        </div>
+        <h3 class="feature-title">Google-Powered Search</h3>
+        <p class="feature-description">
+          Finds matching sources using advanced online search methods.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon" style="background-color: rgba(235, 190, 135, 0.3); color: #ff7d0b">
+          📄
+        </div>
+        <h3 class="feature-title">Detailed Reports</h3>
+        <p class="feature-description">
+          Highlights copied content with links to sources and a full similarity
+          score.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Action Sections -->
+  <section class="actions">
+    <div class="actions-grid">
+      <!-- Upload Document -->
+      <div id="upload" class="action-card upload">
+        <div class="action-icon" style="background-color: rgba(255, 125, 11, 0.1); color: #ff7d0b">
+          📤
+        </div>
+        <h3 class="action-title">Upload Your Document</h3>
+        <p class="action-description">
+          Easily upload your PDF or DOCX and receive a plagiarism analysis report
+          in minutes.
+        </p>
+        <a href="/login/" class="action-btn btn-upload"> 📤 Upload Document </a>
+      </div>
+
+      <!-- Join Classroom -->
+      <div id="classroom" class="action-card classroom">
+        <div class="action-icon" style="background-color: rgba(156, 215, 221, 0.2); color: #9cd7dd">
+          👥
+        </div>
+        <h3 class="action-title">Join Classroom</h3>
+        <p class="action-description">
+          Lecturers can manage submissions and students can track feedback
+          securely.
+        </p>
+        <a href="/login/" class="action-btn btn-classroom">
+          👥 Join Classroom
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trust Indicators -->
+  <section class="trust">
+    <div class="trust-content">
+      <h3 class="trust-title">Trusted by Academic Institutions</h3>
+      <p class="trust-subtitle">
+        Join thousands of students and educators maintaining academic integrity
       </p>
-    </div>
 
-    <div class="feature-card">
-      <div class="feature-icon" style="background-color: rgba(235, 190, 135, 0.3); color: #ff7d0b">
-        📄
-      </div>
-      <h3 class="feature-title">Detailed Reports</h3>
-      <p class="feature-description">
-        Highlights copied content with links to sources and a full similarity
-        score.
-      </p>
-    </div>
-  </div>
-</section>
-
-<!-- Action Sections -->
-<section class="actions">
-  <div class="actions-grid">
-    <!-- Upload Document -->
-    <div id="upload" class="action-card upload">
-      <div class="action-icon" style="background-color: rgba(255, 125, 11, 0.1); color: #ff7d0b">
-        📤
-      </div>
-      <h3 class="action-title">Upload Your Document</h3>
-      <p class="action-description">
-        Easily upload your PDF or DOCX and receive a plagiarism analysis report
-        in minutes.
-      </p>
-      <a href="/login/" class="action-btn btn-upload"> 📤 Upload Document </a>
-    </div>
-
-    <!-- Join Classroom -->
-    <div id="classroom" class="action-card classroom">
-      <div class="action-icon" style="background-color: rgba(156, 215, 221, 0.2); color: #9cd7dd">
-        👥
-      </div>
-      <h3 class="action-title">Join Classroom</h3>
-      <p class="action-description">
-        Lecturers can manage submissions and students can track feedback
-        securely.
-      </p>
-      <a href="/login/" class="action-btn btn-classroom">
-        👥 Join Classroom
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- Trust Indicators -->
-<section class="trust">
-  <div class="trust-content">
-    <h3 class="trust-title">Trusted by Academic Institutions</h3>
-    <p class="trust-subtitle">
-      Join thousands of students and educators maintaining academic integrity
-    </p>
-
-    <div class="trust-stats">
-      <div>
-        <div class="stat-number">10K+</div>
-        <div class="stat-label">Documents Checked</div>
-      </div>
-      <div>
-        <div class="stat-number">500+</div>
-        <div class="stat-label">Universities</div>
-      </div>
-      <div>
-        <div class="stat-number">99.9%</div>
-        <div class="stat-label">Accuracy Rate</div>
+      <div class="trust-stats">
+        <div>
+          <div class="stat-number">10K+</div>
+          <div class="stat-label">Documents Checked</div>
+        </div>
+        <div>
+          <div class="stat-number">500+</div>
+          <div class="stat-label">Universities</div>
+        </div>
+        <div>
+          <div class="stat-number">99.9%</div>
+          <div class="stat-label">Accuracy Rate</div>
+        </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
+</div>
 
 {% endblock %}
