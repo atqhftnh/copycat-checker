@@ -22,5 +22,5 @@ python manage.py migrate
 if [[ -n "$DJANGO_SUPERUSER_USERNAME" && -n "$DJANGO_SUPERUSER_PASSWORD" ]]; then
     python manage.py createsuperuser --noinput \
         --username "$DJANGO_SUPERUSER_USERNAME" \
-        --email "${DJANGO_SUPERUSER_EMAIL:-admin@example.com}" || true
+        --email "${DJANGO_SUPERUSER_EMAIL:-atiqahawal285@gmail.com}" || true
 fi
