@@ -13,6 +13,7 @@ from pathlib import Path
 import dj_database_url
 import logging
 import dotenv
+import nltk
 
 dotenv.load_dotenv()
 
@@ -153,6 +154,10 @@ PLAGIARISM_SETTINGS = {
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'no-reply@copycatchecker.com'
+
+NLTK_DATA_PATH = os.environ.get('NLTK_DATA', '')
+if NLTK_DATA_PATH and NLTK_DATA_PATH not in nltk.data.path:
+    nltk.data.path.append(NLTK_DATA_PATH)
 
 LOGOUT_REDIRECT_URL = '/login/'
 
