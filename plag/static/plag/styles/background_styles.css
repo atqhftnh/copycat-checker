@@ -1,5 +1,5 @@
 .has-background {
-    background-image: url('plag/img/background.jpg'); /* Adjust path relative to this CSS file */
+    background-image: url('plag/static/plag/img/background.jpg'); /* Adjust path relative to this CSS file */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
