@@ -13,7 +13,7 @@
   }
 
   .hero-content {
-    max-width: 896px;
+    max-width: 1296px;
     margin: 0 auto;
     background-color: rgba(255, 255, 255, 0.85);
     border-radius: 16px;
@@ -53,10 +53,10 @@
   }
 
   .gradient-text {
-    background: linear-gradient(to right, #ff7d0b, #ebbe87);
-    background-clip: text;
+    background: linear-gradient(to right, var(--brand-orange), var(--brand-teal));
     -webkit-background-clip: text;
-    color: transparent;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .hero-subtitle {
@@ -117,6 +117,11 @@
   .features-header {
     text-align: center;
     margin-bottom: 48px;
+    background-color: rgba(255, 255, 255, 0.85);
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    max-width: 1200px;
+    margin: 0 auto;
   }
 
   .features-title {
@@ -131,6 +136,7 @@
     color: #4b5563;
     max-width: 672px;
     margin: 0 auto;
+    margin-bottom: 40px;
   }
 
   .features-grid {
@@ -258,8 +264,8 @@
   }
 
   .btn-classroom {
-    background-color: white;
-    color: #9cd7dd;
+    background-color: #9cd7dd;
+    color: #000000;
     border: 1px solid #9cd7dd;
   }
 
@@ -278,7 +284,7 @@
     border-radius: 16px;
     padding: 48px;
     text-align: center;
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
