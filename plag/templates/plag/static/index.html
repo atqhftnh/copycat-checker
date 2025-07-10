@@ -4,6 +4,7 @@
 {% block title %} Student Dashboard - CopyCat Checker {% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'plag/styles/background_styles.css' %}">
 <style>
   /* Student Dashboard Styles */
   .student-container {
@@ -560,125 +561,127 @@
 {% endblock %}
 
 {% block content %}
-<main class="dashboard-container">
-  <div class="dashboard-header">
-    <h1 class="dashboard-title">Student Dashboard</h1>
-    <p class="dashboard-subtitle">
-      Upload assignments, check plagiarism, and manage your classrooms
-    </p>
-  </div>
+<div class="has-background">
+  <main class="dashboard-container">
+    <div class="dashboard-header">
+      <h1 class="dashboard-title">Student Dashboard</h1>
+      <p class="dashboard-subtitle">
+        Upload assignments, check plagiarism, and manage your classrooms
+      </p>
+    </div>
 
-  <!-- Navigation Buttons -->
-  <div class="nav-buttons">
-    <button class="nav-btn"><i class="fas fa-history"></i> History</button>
-    <button class="nav-btn"><i class="fas fa-file-alt"></i> Reports</button>
-    <button class="nav-btn"><i class="fas fa-chalkboard-teacher"></i> Classrooms</button>
-  </div>
+    <!-- Navigation Buttons -->
+    <div class="nav-buttons">
+      <button class="nav-btn"><i class="fas fa-history"></i> History</button>
+      <button class="nav-btn"><i class="fas fa-file-alt"></i> Reports</button>
+      <button class="nav-btn"><i class="fas fa-chalkboard-teacher"></i> Classrooms</button>
+    </div>
 
-  <!-- Upload Section -->
-  <div class="upload-container"> <!-- ✅ NEW WRAPPER -->
-    <div class="upload-section">
-      <h2 class="upload-title">Upload Your Assignment</h2>
-      <form id="plagiarismForm" method="POST" action="{% url 'index_trial' %}" enctype="multipart/form-data">
-        {% csrf_token %}
+    <!-- Upload Section -->
+    <div class="upload-container"> <!-- ✅ NEW WRAPPER -->
+      <div class="upload-section">
+        <h2 class="upload-title">Upload Your Assignment</h2>
+        <form id="plagiarismForm" method="POST" action="{% url 'index_trial' %}" enctype="multipart/form-data">
+          {% csrf_token %}
 
-        <div class="upload-area" id="upload-area">
-          <div class="upload-icon">
-            <i class="fas fa-cloud-upload-alt"></i>
+          <div class="upload-area" id="upload-area">
+            <div class="upload-icon">
+              <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <p class="upload-text">
+              Drag & Drop your file here or <span id="browseLink" class="browse-link">browse files</span>
+            </p>
+            <input type="file" id="fileInput" name="plagFile" accept="{{ accepted_file_exts }}" hidden required />
+            <div id="fileList" class="file-list"></div>
           </div>
-          <p class="upload-text">
-            Drag & Drop your file here or <span id="browseLink" class="browse-link">browse files</span>
-          </p>
-          <input type="file" id="fileInput" name="plagFile" accept="{{ accepted_file_exts }}" hidden required />
-          <div id="fileList" class="file-list"></div>
+
+          <button type="submit" name="submit" class="submit-btn" id="submitBtn">
+            <i class="fas fa-search"></i> Check Plagiarism
+          </button>
+
+          <div id="loadingSpinner" class="loading-spinner">
+            <div class="spinner"></div>
+            <p class="loading-text">Analyzing your document...</p>
+          </div>
+        </form>
+      </div>
+    </div> <!-- ✅ END WRAPPER -->
+
+    <!-- Join Classroom Modal -->
+    <div id="joinClassroomModal" class="modal-overlay">
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <h4 class="modal-title">Join Classroom</h4>
+        <form method="POST" action="{% url 'join_classroom' %}">
+          {% csrf_token %}
+          <input type="text" name="join_code" placeholder="Enter classroom join code" required class="modal-input" />
+        </form>
+      </div>
+    </div>
+
+    <!-- Classroom Section -->
+    <div class="classroom-container"> <!-- ✅ NEW WRAPPER -->
+      <div class="classroom-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="fas fa-chalkboard section-icon"></i>
+            Joined Classrooms
+          </h2>
+          <button type="button" class="join-btn" onclick="openModal()">
+            <i class="fas fa-plus"></i> Join New Classroom
+          </button>
         </div>
 
-        <button type="submit" name="submit" class="submit-btn" id="submitBtn">
-          <i class="fas fa-search"></i> Check Plagiarism
-        </button>
+        {% if classrooms %}
+        <div class="classroom-grid">
+          {% for classroom in classrooms %}
+          <div class="classroom-card">
+            <div class="classroom-icon">
+              <i class="fas fa-chalkboard"></i>
+            </div>
 
-        <div id="loadingSpinner" class="loading-spinner">
-          <div class="spinner"></div>
-          <p class="loading-text">Analyzing your document...</p>
+            <h3 class="classroom-name">
+              {{ classroom.name }}
+              {% if classroom.group %}[{{ classroom.group }}]{% endif %}
+              {% if classroom.intake %} ({{ classroom.intake }}){% endif %}
+            </h3>
+
+            <p class="classroom-stats">
+              <i class="fas fa-user-graduate"></i>
+              Lecturer: {{ classroom.lecturer.userprofile.full_name }}
+            </p>
+
+            <div class="classroom-code">
+              <i class="fas fa-key"></i> Code: {{ classroom.join_code }}
+            </div>
+
+            <div class="card-actions">
+              <a href="{% url 'student_classroom_detail' classroom.id %}" class="action-btn btn-view">
+                <i class="fas fa-eye"></i> View
+              </a>
+
+              <form method="post" action="{% url 'leave_classroom' classroom.id %}"
+                onsubmit="return confirm('Are you sure you want to leave this classroom?');">
+                {% csrf_token %}
+                <button type="submit" class="action-btn btn-delete">
+                  <i class="fas fa-sign-out-alt"></i> Leave
+                </button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
         </div>
-      </form>
-    </div>
-  </div> <!-- ✅ END WRAPPER -->
-
-  <!-- Join Classroom Modal -->
-  <div id="joinClassroomModal" class="modal-overlay">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeModal()">&times;</button>
-      <h4 class="modal-title">Join Classroom</h4>
-      <form method="POST" action="{% url 'join_classroom' %}">
-        {% csrf_token %}
-        <input type="text" name="join_code" placeholder="Enter classroom join code" required class="modal-input" />
-      </form>
-    </div>
-  </div>
-
-  <!-- Classroom Section -->
-  <div class="classroom-container"> <!-- ✅ NEW WRAPPER -->
-    <div class="classroom-section">
-      <div class="section-header">
-        <h2 class="section-title">
-          <i class="fas fa-chalkboard section-icon"></i>
-          Joined Classrooms
-        </h2>
-        <button type="button" class="join-btn" onclick="openModal()">
-          <i class="fas fa-plus"></i> Join New Classroom
-        </button>
-      </div>
-
-      {% if classrooms %}
-      <div class="classroom-grid">
-        {% for classroom in classrooms %}
-        <div class="classroom-card">
-          <div class="classroom-icon">
-            <i class="fas fa-chalkboard"></i>
-          </div>
-
-          <h3 class="classroom-name">
-            {{ classroom.name }}
-            {% if classroom.group %}[{{ classroom.group }}]{% endif %}
-            {% if classroom.intake %} ({{ classroom.intake }}){% endif %}
-          </h3>
-
-          <p class="classroom-stats">
-            <i class="fas fa-user-graduate"></i>
-            Lecturer: {{ classroom.lecturer.userprofile.full_name }}
-          </p>
-
-          <div class="classroom-code">
-            <i class="fas fa-key"></i> Code: {{ classroom.join_code }}
-          </div>
-
-          <div class="card-actions">
-            <a href="{% url 'student_classroom_detail' classroom.id %}" class="action-btn btn-view">
-              <i class="fas fa-eye"></i> View
-            </a>
-
-            <form method="post" action="{% url 'leave_classroom' classroom.id %}"
-              onsubmit="return confirm('Are you sure you want to leave this classroom?');">
-              {% csrf_token %}
-              <button type="submit" class="action-btn btn-delete">
-                <i class="fas fa-sign-out-alt"></i> Leave
-              </button>
-            </form>
-          </div>
+        {% else %}
+        <div class="empty-state">
+          <div class="empty-icon"><i class="fas fa-door-open"></i></div>
+          <div class="empty-text">You're not in any classrooms yet</div>
+          <div class="empty-subtext">Ask your lecturer for a join code.</div>
         </div>
-        {% endfor %}
+        {% endif %}
       </div>
-      {% else %}
-      <div class="empty-state">
-        <div class="empty-icon"><i class="fas fa-door-open"></i></div>
-        <div class="empty-text">You're not in any classrooms yet</div>
-        <div class="empty-subtext">Ask your lecturer for a join code.</div>
-      </div>
-      {% endif %}
-    </div>
-  </div> <!-- ✅ END WRAPPER -->
-</main>
+    </div> <!-- ✅ END WRAPPER -->
+  </main>
+</div>
 {% endblock %}
 
 {% block extra_js %}

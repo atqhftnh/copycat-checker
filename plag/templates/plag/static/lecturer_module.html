@@ -6,6 +6,7 @@ Lecturer Dashboard - CopyCat Checker
 {% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'plag/styles/background_styles.css' %}">
 <style>
     /* Lecturer Dashboard Styles */
     .lecturer-container {
@@ -440,155 +441,160 @@ Lecturer Dashboard - CopyCat Checker
 {% endblock %}
 
 {% block content %}
-<div class="lecturer-container">
-    <!-- Header -->
-    <div class="dashboard-header">
-        <h1 class="dashboard-title">Lecturer Dashboard</h1>
-        <p class="dashboard-subtitle">
-            Manage your classrooms, assignments, and student submissions
-        </p>
-    </div>
-
-    <!-- Navigation Buttons -->
-    <div class="nav-buttons">
-        <a href="{% url 'homepage' %}" class="nav-btn primary">
-            <i class="fas fa-home"></i> Home
-        </a>
-        <button class="nav-btn"><i class="fas fa-history"></i> History</button>
-        <a href="{% url 'lecturer_dashboard' %}" class="nav-btn primary">
-            <i class="fas fa-chalkboard-teacher"></i> Dashboard
-        </a>
-    </div>
-
-    <!-- Classroom Section -->
-    <div class="classroom-section">
-        <div class="section-header">
-            <h2 class="section-title">
-                <i class="fas fa-chalkboard-teacher section-icon"></i>
-                Your Classrooms
-            </h2>
-            <button class="create-btn" onclick="openCreateModal()">
-                <i class="fas fa-plus"></i> Create New Classroom
-            </button>
+<div class="has-background">
+    <div class="lecturer-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Lecturer Dashboard</h1>
+            <p class="dashboard-subtitle">
+                Manage your classrooms, assignments, and student submissions
+            </p>
         </div>
 
-        {% if classrooms %}
-        <div class="classroom-grid">
-            {% for classroom in classrooms %}
-            <div class="classroom-card">
-                <div class="classroom-icon">
-                    <i class="fas fa-chalkboard-teacher"></i>
-                </div>
+        <!-- Navigation Buttons -->
+        <div class="nav-buttons">
+            <a href="{% url 'homepage' %}" class="nav-btn primary">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <button class="nav-btn"><i class="fas fa-history"></i> History</button>
+            <a href="{% url 'lecturer_dashboard' %}" class="nav-btn primary">
+                <i class="fas fa-chalkboard-teacher"></i> Dashboard
+            </a>
+        </div>
 
-                <h3 class="classroom-name">
-                    {{ classroom.name }}
-                    {% if classroom.group %}[{{ classroom.group }}]{% endif %}
-                    {% if classroom.intake %} ({{ classroom.intake }}){% endif %}
-                </h3>
-
-                <p class="classroom-stats">
-                    <i class="fas fa-users"></i> {{ classroom.students.count }} Student{{classroom.students.count|pluralize }}
-                </p>
-
-                <div class="classroom-code">
-                    <i class="fas fa-key"></i> Code: {{ classroom.join_code }}
-                </div>
-
-                <div class="card-actions">
-                    <a href="{% url 'lecturer_classroom_detail' classroom.id %}" class="action-btn btn-view">
-                        <i class="fas fa-eye"></i> View
-                    </a>
-
-                    <button class="action-btn btn-edit" onclick="openEditModal({{ classroom.id }})">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-
-                    <form method="post" action="{% url 'delete_classroom' classroom.id %}"
-                        onsubmit="return confirm('Are you sure?');">
-                        {% csrf_token %}
-                        <button type="submit" class="action-btn btn-delete">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                    </form>
-                </div>
+        <!-- Classroom Section -->
+        <div class="classroom-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-chalkboard-teacher section-icon"></i>
+                    Your Classrooms
+                </h2>
+                <button class="create-btn" onclick="openCreateModal()">
+                    <i class="fas fa-plus"></i> Create New Classroom
+                </button>
             </div>
 
-            <!-- Edit Classroom Modal -->
-            <div id="editModal{{ classroom.id }}" class="modal-overlay">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3 class="modal-title">Edit Classroom</h3>
-                        <button class="modal-close" onclick="closeEditModal({{ classroom.id }})">&times;</button>
+            {% if classrooms %}
+            <div class="classroom-grid">
+                {% for classroom in classrooms %}
+                <div class="classroom-card">
+                    <div class="classroom-icon">
+                        <i class="fas fa-chalkboard-teacher"></i>
                     </div>
 
-                    <form method="post" action="{% url 'edit_classroom' classroom.id %}">
-                        {% csrf_token %}
-                        <div class="modal-body">
-                            <div class="modal-form-group">
-                                <label class="modal-label">Classroom Name</label>
-                                <input type="text" class="modal-input" name="name" value="{{ classroom.name }}"
-                                    required />
-                            </div>
-                            <div class="modal-form-group">
-                                <label class="modal-label">Group</label>
-                                <input type="text" class="modal-input" name="group"
-                                    value="{{ classroom.group|default:'' }}" />
-                            </div>
-                            <div class="modal-form-group">
-                                <label class="modal-label">Intake</label>
-                                <input type="text" class="modal-input" name="intake"
-                                    value="{{ classroom.intake|default:'' }}" />
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="modal-btn modal-btn-secondary"
-                                onclick="closeEditModal({{ classroom.id }})">Cancel</button>
-                            <button type="submit" class="modal-btn modal-btn-primary">Save Changes</button>
-                        </div>
-                    </form>
+                    <h3 class="classroom-name">
+                        {{ classroom.name }}
+                        {% if classroom.group %}[{{ classroom.group }}]{% endif %}
+                        {% if classroom.intake %} ({{ classroom.intake }}){% endif %}
+                    </h3>
+
+                    <p class="classroom-stats">
+                        <i class="fas fa-users"></i> {{ classroom.students.count }}
+                        Student{{classroom.students.count|pluralize }}
+                    </p>
+
+                    <div class="classroom-code">
+                        <i class="fas fa-key"></i> Code: {{ classroom.join_code }}
+                    </div>
+
+                    <div class="card-actions">
+                        <a href="{% url 'lecturer_classroom_detail' classroom.id %}" class="action-btn btn-view">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+
+                        <button class="action-btn btn-edit" onclick="openEditModal({{ classroom.id }})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+
+                        <form method="post" action="{% url 'delete_classroom' classroom.id %}"
+                            onsubmit="return confirm('Are you sure?');">
+                            {% csrf_token %}
+                            <button type="submit" class="action-btn btn-delete">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </form>
+                    </div>
                 </div>
+
+                <!-- Edit Classroom Modal -->
+                <div id="editModal{{ classroom.id }}" class="modal-overlay">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title">Edit Classroom</h3>
+                            <button class="modal-close" onclick="closeEditModal({{ classroom.id }})">&times;</button>
+                        </div>
+
+                        <form method="post" action="{% url 'edit_classroom' classroom.id %}">
+                            {% csrf_token %}
+                            <div class="modal-body">
+                                <div class="modal-form-group">
+                                    <label class="modal-label">Classroom Name</label>
+                                    <input type="text" class="modal-input" name="name" value="{{ classroom.name }}"
+                                        required />
+                                </div>
+                                <div class="modal-form-group">
+                                    <label class="modal-label">Group</label>
+                                    <input type="text" class="modal-input" name="group"
+                                        value="{{ classroom.group|default:'' }}" />
+                                </div>
+                                <div class="modal-form-group">
+                                    <label class="modal-label">Intake</label>
+                                    <input type="text" class="modal-input" name="intake"
+                                        value="{{ classroom.intake|default:'' }}" />
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="modal-btn modal-btn-secondary"
+                                    onclick="closeEditModal({{ classroom.id }})">Cancel</button>
+                                <button type="submit" class="modal-btn modal-btn-primary">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-chalkboard"></i></div>
+                <div class="empty-text">No classrooms created yet</div>
+                <div class="empty-subtext">Click the plus icon to get started.</div>
+            </div>
+            {% endif %}
         </div>
-        {% else %}
-        <div class="empty-state">
-            <div class="empty-icon"><i class="fas fa-chalkboard"></i></div>
-            <div class="empty-text">No classrooms created yet</div>
-            <div class="empty-subtext">Click the plus icon to get started.</div>
-        </div>
-        {% endif %}
     </div>
-</div>
 
-<!-- Create Classroom Modal -->
-<div id="createModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3 class="modal-title">Create New Classroom</h3>
-            <button class="modal-close" onclick="closeCreateModal()">&times;</button>
+    <!-- Create Classroom Modal -->
+    <div id="createModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Create New Classroom</h3>
+                <button class="modal-close" onclick="closeCreateModal()">&times;</button>
+            </div>
+
+            <form method="post" action="{% url 'create_classroom' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="modal-form-group">
+                        <label class="modal-label">Classroom Code & Name</label>
+                        <input type="text" class="modal-input" name="name" placeholder="e.g., IAS1234 Classroom Name"
+                            required />
+                    </div>
+                    <div class="modal-form-group">
+                        <label class="modal-label">Group</label>
+                        <input type="text" class="modal-input" name="group" placeholder="e.g., G1" />
+                    </div>
+                    <div class="modal-form-group">
+                        <label class="modal-label">Intake</label>
+                        <input type="text" class="modal-input" name="intake" placeholder="e.g., 2514S" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="modal-btn modal-btn-secondary"
+                        onclick="closeCreateModal()">Cancel</button>
+                    <button type="submit" class="modal-btn modal-btn-primary">Create</button>
+                </div>
+            </form>
         </div>
-
-        <form method="post" action="{% url 'create_classroom' %}">
-            {% csrf_token %}
-            <div class="modal-body">
-                <div class="modal-form-group">
-                    <label class="modal-label">Classroom Code & Name</label>
-                    <input type="text" class="modal-input" name="name" placeholder="e.g., IAS1234 Classroom Name" required />
-                </div>
-                <div class="modal-form-group">
-                    <label class="modal-label">Group</label>
-                    <input type="text" class="modal-input" name="group" placeholder="e.g., G1" />
-                </div>
-                <div class="modal-form-group">
-                    <label class="modal-label">Intake</label>
-                    <input type="text" class="modal-input" name="intake" placeholder="e.g., 2514S" />
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="modal-btn modal-btn-secondary" onclick="closeCreateModal()">Cancel</button>
-                <button type="submit" class="modal-btn modal-btn-primary">Create</button>
-            </div>
-        </form>
     </div>
 </div>
 {% endblock %}
