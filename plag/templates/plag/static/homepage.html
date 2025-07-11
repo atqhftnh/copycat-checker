@@ -427,7 +427,13 @@
           in minutes.
         </p>
         {% if user.is_authenticated %}
-          <a href="/student/dashboard/" class="action-btn btn-upload"> 📤 Upload Document </a>
+          {% if user.role == 'student' %}
+            <a href="/student/dashboard/" class="action-btn btn-upload"> 📤 Upload Document </a>
+          {% else %}
+            <button type="button" class="action-btn btn-classroom" onclick="showAccessDeniedAlert()">
+              👥 You do not have access for this feature
+            </button>
+          {% endif %}
         {% else %}
           <a href="/login/" class="action-btn btn-upload"> 📤 Upload Document </a>
         {% endif %}
@@ -443,9 +449,13 @@
           Lecturers can manage submissions and students can track feedback securely.
         </p>
         {% if user.is_authenticated %}
-          <a href="/lecturer/dashboard/" class="action-btn btn-classroom">
-          👥 Classroom
-          </a>
+          {% if user.role == 'lecturer' %}
+            <a href="/lecturer/dashboard/" class="action-btn btn-classroom">
+            👥 Classroom
+            </a>
+          {% else %}
+            <a href="/student/dashboard/" class="action-btn btn-upload"> 👥 Classroom </a>
+          {endif}
         {% else %}
           <a href="/login/" class="action-btn btn-classroom">
           👥 Classroom
