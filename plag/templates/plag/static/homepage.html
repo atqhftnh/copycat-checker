@@ -426,7 +426,11 @@
           Easily upload your PDF or DOCX and receive a plagiarism analysis report
           in minutes.
         </p>
-        <a href="/student/dashboard/" class="action-btn btn-upload"> 📤 Upload Document </a>
+        {% if user.is_authenticated %}
+          <a href="/student/dashboard/" class="action-btn btn-upload"> 📤 Upload Document </a>
+        {% else %}
+          <a href="/login/" class="action-btn btn-upload"> 📤 Upload Document </a>
+        {% endif %}
       </div>
 
       <!-- Join Classroom -->
@@ -434,14 +438,19 @@
         <div class="action-icon" style="background-color: rgba(156, 215, 221, 0.2); color: #9cd7dd">
           👥
         </div>
-        <h3 class="action-title">Join Classroom</h3>
+        <h3 class="action-title">Classroom</h3>
         <p class="action-description">
-          Lecturers can manage submissions and students can track feedback
-          securely.
+          Lecturers can manage submissions and students can track feedback securely.
         </p>
-        <a href="/student/dashboard/" class="action-btn btn-classroom">
-          👥 Join Classroom
-        </a>
+        {% if user.is_authenticated %}
+          <a href="/lecturer/dashboard/" class="action-btn btn-classroom">
+          👥 Classroom
+          </a>
+        {% else %}
+          <a href="/login/" class="action-btn btn-classroom">
+          👥 Classroom
+          </a>
+        {% endif %}
       </div>
     </div>
   </section>

@@ -15,7 +15,12 @@
 
   .dashboard-header {
     text-align: center;
-    margin-bottom: 48px;
+    background-color: rgba(255, 255, 255, 0.85);
+    border-radius: 16px;
+    max-width: 1000px;
+    margin: 0 auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(235, 190, 135, 0.2);
   }
 
   .dashboard-title {
@@ -25,11 +30,14 @@
     -webkit-background-clip: text;
     color: transparent;
     margin-bottom: 16px;
+    margin-top: 20px;
   }
 
   .dashboard-subtitle {
     color: #6b7280;
     font-size: 18px;
+    margin-bottom: 48px;
+    padding-bottom: 20px;
   }
 
   /* Navigation Buttons */
@@ -561,7 +569,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="has-background">
+<body class="has-background">
   <main class="dashboard-container">
     <div class="dashboard-header">
       <h1 class="dashboard-title">Student Dashboard</h1>
@@ -674,7 +682,7 @@
       </div>
     </div> <!-- ✅ END WRAPPER -->
   </main>
-</div>
+</body>
 {% endblock %}
 
 {% block extra_js %}
