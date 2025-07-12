@@ -152,7 +152,8 @@ class ScanLog(models.Model):
         (E, 'Internal processing error'),
         (I, 'Skipped/Ignored'),
     )
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='scan_logs', null=True, blank=True) 
+
     timestamp = models.DateTimeField(auto_now_add=True)
     protected_resource = models.ForeignKey(ProtectedResource, null=True, blank=True, on_delete=models.SET_NULL)
     protected_source = models.TextField(null=True, blank=True)  # the text (source) of the protected resource
@@ -181,9 +182,8 @@ class ScanLog(models.Model):
     )
 
     # --- New fields to add for the student dashboard and detailed report display ---
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='scan_logs', null=True, blank=True) # Link to User
     document_name = models.CharField(max_length=255, default='Unnamed Document') # Store the original document name
-    # uploaded_file = models.FileField(upload_to='scanned_documents/', null=True, blank=True) # Optional: if you want to store the original file
+    uploaded_file = models.FileField(upload_to='scanned_documents/', null=True, blank=True) # Optional: if you want to store the original file
 
     ai_probability_score = models.FloatField(null=True, blank=True) # Essential for AI score display
     burstiness_score = models.FloatField(null=True, blank=True)     # Essential for burstiness score display
