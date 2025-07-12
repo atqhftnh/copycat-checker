@@ -141,21 +141,18 @@ class Query(models.Model):
 
 
 class ScanLog(models.Model):
+    
+    FAILED_TYPE = (
+        ('H', 'HTTP error'),
+        ('C', 'No content candidates found (initial scan) or matched (post processing)'),
+        ('E', 'Internal processing error'),
+        ('I', 'Skipped/Ignored'),
+    )
     timestamp = models.DateTimeField(auto_now_add=True)
     protected_source = models.TextField(blank=True, null=True)
     scoring_debug = models.TextField(blank=True, null=True)
     fail_reason = models.CharField(max_length=500, blank=True, null=True)
-    fail_type = models.CharField(
-        max_length=1,
-        choices=(
-            ('H', 'HTTP error'),
-            ('C', 'No content candidates found (initial scan) or matched (post processing)'),
-            ('E', 'Internal processing error'),
-            ('I', 'Skipped/Ignored'),
-        ),
-        blank=True,
-        null=True
-    )
+    
     user_ip = models.GenericIPAddressField(blank=True, null=True)
     
     # Existing plagiarism fields
