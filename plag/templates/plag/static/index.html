@@ -574,6 +574,7 @@
 {% endblock %}
 
 {% block content %}
+
 <body class="has-background">
   <main class="dashboard-container">
     <!-- Header -->
@@ -615,6 +616,37 @@
         </form>
       </div>
     </div> <!-- ✅ END WRAPPER -->
+
+    <div class="recent-scans-section">
+      <h2>Your Recent Checks</h2>
+      {% if recent_scans %}
+      <ul class="scan-list">
+        {% for scan in recent_scans %}
+        <li class="scan-item">
+          <div class="scan-details">
+            <h3>{{ scan.document_name }}</h3>
+            <p class="date">Scanned on: {{ scan.timestamp|date:"F j, Y \a\t H:i" }}</p>
+            {% if scan.overall_plagiarism_percentage is not None %}
+            <p>Overall Similarity: <strong>{{ scan.overall_plagiarism_percentage|floatformat:2 }}%</strong></p>
+            {% else %}
+            <p>Overall Similarity: <strong>N/A</strong></p>
+            {% endif %}
+            {% if scan.ai_probability_score is not None %}
+            <p>AI Probability: <strong>{{ scan.ai_probability_score|floatformat:2 }}%</strong></p>
+            {% endif %}
+          </div>
+          <a href="{% url 'view_specific_scan' scan.id %}" class="scan-link">View Details</a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="no-scans-message">You haven't performed any checks yet. Upload a document above to get started!</p>
+      {% endif %}
+    </div>
+    <div class="recent-scans-section">
+      <h2>Your Classrooms</h2>
+    </div>
+
 
     <!-- Join Classroom Modal -->
     <div id="joinClassroomModal" class="modal-overlay">
