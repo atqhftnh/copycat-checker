@@ -117,7 +117,7 @@ def student_dashboard(request):
 def student_dashboard_view(request):
     # Fetch all scan logs for the current user, ordered by most recent
     # Ensure 'user' field is present in ScanLog for this to work
-    recent_scans = ScanLog.objects.filter(user=request.user).order_by('-timestamp') # Order by your existing 'timestamp' field
+    recent_scans = ScanLog.objects.filter(user=request.user).order_by('-timestamp')[:5] # Order by your existing 'timestamp' field
 
     # Pass the user's UserProfile object to the template
     student_profile = request.user.userprofile if hasattr(request.user, 'userprofile') else None
