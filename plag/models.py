@@ -141,60 +141,80 @@ class Query(models.Model):
 
 
 class ScanLog(models.Model):
-    H = 'H'
-    C = 'C'
-    E = 'E'
-    I = 'I'
-
-    FAILED_TYPE = (
-        (H, 'HTTP error'),
-        (C, 'No content candidates found (initial scan) or matched (post processing)'),
-        (E, 'Internal processing error'),
-        (I, 'Skipped/Ignored'),
-    )
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='scan_logs', null=True, blank=True) 
-
     timestamp = models.DateTimeField(auto_now_add=True)
-    protected_resource = models.ForeignKey(ProtectedResource, null=True, blank=True, on_delete=models.SET_NULL)
-    protected_source = models.TextField(null=True, blank=True)  # the text (source) of the protected resource
-    queries = models.ManyToManyField(Query, blank=True) # This links the *entire set of queries* for a scan log
-    scoring_debug = models.TextField(null=True, blank=True)
-    fail_reason = models.CharField(max_length=500, null=True, blank=True)
-    fail_type = models.CharField(max_length=1, choices=FAILED_TYPE, null=True, blank=True)
-    user_ip = models.GenericIPAddressField(null=True, blank=True)
-
+    protected_source = models.TextField(blank=True, null=True)
+    scoring_debug = models.TextField(blank=True, null=True)
+    fail_reason = models.CharField(max_length=500, blank=True, null=True)
+    fail_type = models.CharField(
+        max_length=1,
+        choices=(
+            ('H', 'HTTP error'),
+            ('C', 'No content candidates found (initial scan) or matched (post processing)'),
+            ('E', 'Internal processing error'),
+            ('I', 'Skipped/Ignored'),
+        ),
+        blank=True,
+        null=True
+    )
+    user_ip = models.GenericIPAddressField(blank=True, null=True)
+    
+    # Existing plagiarism fields
     average_plagiarism_percent = models.FloatField(
-        null=True, blank=True, 
-        help_text='Average plagiarism percentage for documents with multiple sources, excluding false positives.'
+        blank=True,
+        null=True,
+        help_text="Average plagiarism percentage for documents with multiple sources, excluding false positives."
     )
     average_calculated_at = models.DateTimeField(
-        null=True, blank=True,
-        help_text='Timestamp when the average plagiarism percentage was last calculated.'
+        blank=True,
+        null=True,
+        help_text="Timestamp when the average plagiarism percentage was last calculated."
     )
-    
     overall_plagiarism_percentage = models.DecimalField(
-        max_digits=5, decimal_places=2, null=True, blank=True,
+        max_digits=5,
+        decimal_places=2,
+        blank=True,
+        null=True,
         help_text="Overall percentage of the document found to be plagiarized across all sources."
     )
     overall_calculated_at = models.DateTimeField(
-        null=True, blank=True,
+        blank=True,
+        null=True,
         help_text="Timestamp when the overall plagiarism percentage was last calculated."
     )
 
-    # --- New fields to add for the student dashboard and detailed report display ---
-    document_name = models.CharField(max_length=255, default='Unnamed Document') # Store the original document name
-    uploaded_file = models.FileField(upload_to='scanned_documents/', null=True, blank=True) # Optional: if you want to store the original file
+    # New AI-related fields
+    ai_probability_score = models.FloatField(blank=True, null=True)
+    ai_label = models.CharField(max_length=50, blank=True, null=True) # e.g., 'Human', 'AI', 'Mixed'
+    burstiness_score = models.FloatField(blank=True, null=True)
+    top_words = JSONField(blank=True, null=True) # Stores word frequency data
+    text_snippet = models.TextField(blank=True, null=True) # A snippet of the scanned text
 
-    ai_probability_score = models.FloatField(null=True, blank=True) # Essential for AI score display
-    ai_label = models.CharField(max_length=50, null=True, blank=True)
-    burstiness_score = models.FloatField(null=True, blank=True)     # Essential for burstiness score display
-    text_snippet = models.TextField(null=True, blank=True)          # Essential for the 'Analyzed Text Sample' display
-    top_words = JSONField(null=True, blank=True)
+    # New fields for document tracking (from index_trial.html context)
+    document_name = models.CharField(max_length=255, default="Unnamed Document")
+    uploaded_file = models.FileField(upload_to='scanned_documents/', blank=True, null=True) # To store the actual file
+
+    # Relationships
+    protected_resource = models.ForeignKey(
+        'ProtectedResource',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+    queries = models.ManyToManyField('Query', blank=True)
+    
+    # Link to User model
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL, # If a user is deleted, don't delete their scan logs
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        db_table = 'plag_scanlog' # Ensure the table name is explicitly defined
 
     def __str__(self):
-        # Adjusted __str__ for clarity on dashboard/report
-        doc_name = self.document_name if self.document_name else "Unnamed Document"
-        return f"Scan {self.id}: {doc_name} by {self.user.username if self.user else 'N/A'} on {self.timestamp.strftime('%Y-%m-%d')}"
+        return f"ScanLog {self.id} for {self.document_name if self.document_name else 'Unnamed'}"
 
 
 class ScanResult(models.Model):
