@@ -8,6 +8,7 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.db.models import JSONField
 
 ''' Not moved over (yet):
 indextrial - will need
@@ -142,14 +143,14 @@ class Query(models.Model):
 class ScanLog(models.Model):
     H = 'H'
     C = 'C'
-    E = 'E' # Added 'E' for Error, as used in post_processing.py
-    I = 'I' # Added 'I' for Ignored, as used in post_processing.py
+    E = 'E'
+    I = 'I'
 
     FAILED_TYPE = (
         (H, 'HTTP error'),
         (C, 'No content candidates found (initial scan) or matched (post processing)'),
-        (E, 'Internal processing error'), # Add this to your choices
-        (I, 'Skipped/Ignored'),         # Add this to your choices
+        (E, 'Internal processing error'),
+        (I, 'Skipped/Ignored'),
     )
 
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -179,22 +180,25 @@ class ScanLog(models.Model):
         help_text="Timestamp when the overall plagiarism percentage was last calculated."
     )
 
+    # --- New fields to add for the student dashboard and detailed report display ---
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='scan_logs', null=True, blank=True) # Link to User
+    document_name = models.CharField(max_length=255, default='Unnamed Document') # Store the original document name
+    # uploaded_file = models.FileField(upload_to='scanned_documents/', null=True, blank=True) # Optional: if you want to store the original file
+
+    ai_probability_score = models.FloatField(null=True, blank=True) # Essential for AI score display
+    burstiness_score = models.FloatField(null=True, blank=True)     # Essential for burstiness score display
+    text_snippet = models.TextField(null=True, blank=True)          # Essential for the 'Analyzed Text Sample' display
+    top_words = JSONField(null=True, blank=True)
+
     def __str__(self):
-        return str(self.id) + ': ' + self.timestamp.strftime("%b %d %Y %H:%M:%S")
+        # Adjusted __str__ for clarity on dashboard/report
+        doc_name = self.document_name if self.document_name else "Unnamed Document"
+        return f"Scan {self.id}: {doc_name} by {self.user.username if self.user else 'N/A'} on {self.timestamp.strftime('%Y-%m-%d')}"
 
 
 class ScanResult(models.Model):
     result_log = models.ForeignKey(ScanLog, on_delete=models.CASCADE)
-    
-    # --- ADD THIS LINE ---
-    # This links a specific scan result back to the exact query (paragraph) that found it.
-    query = models.ForeignKey(Query, related_name='scan_results', on_delete=models.CASCADE) # Made null=False, blank=False
-    # You could temporarily set null=True, blank=True if you have existing data
-    # that doesn't have a Query linked, and then update it with a data migration.
-    # For new data, it should ideally always be linked.
-    # If you choose null=True, blank=True temporarily:
-    # query = models.ForeignKey(Query, related_name='scan_results', on_delete=models.CASCADE, null=True, blank=True)
-    # Then after populating existing data, change back to null=False, blank=False and re-migrate.
+    query = models.ForeignKey(Query, related_name='scan_results', on_delete=models.CASCADE)
 
     timestamp = models.DateTimeField(auto_now_add=True)
     match_url = models.CharField(max_length=2048)
@@ -207,7 +211,7 @@ class ScanResult(models.Model):
     perc_of_duplication = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # NNN.DD%
 
     def __str__(self):
-        return str(self.id) + ': ' + self.timestamp.strftime("%b %d %Y %H:%M:%S")
+        return f"Result {self.id} for Scan {self.result_log.id}: {self.perc_of_duplication}% on {self.timestamp.strftime('%Y-%m-%d')}"
 
 
 class RecentBlogPosts(models.Model):

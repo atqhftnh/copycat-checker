@@ -112,6 +112,49 @@ def student_dashboard(request):
     return render(request, 'plag/static/index.html', {'classrooms': classrooms})
 
 
+# --- New View: Student Dashboard (lists past scans) ---
+@login_required
+def student_dashboard_view(request):
+    # Fetch all scan logs for the current user, ordered by most recent
+    # Ensure 'user' field is present in ScanLog for this to work
+    recent_scans = ScanLog.objects.filter(user=request.user).order_by('-timestamp') # Order by your existing 'timestamp' field
+
+    # Pass the user's UserProfile object to the template
+    student_profile = request.user.userprofile if hasattr(request.user, 'userprofile') else None
+
+    context = {
+        'recent_scans': recent_scans,
+        'student': student_profile,
+        'user': request.user,
+    }
+    return render(request, 'plag/index.html', context) # Render your existing index.html as the dashboard
+
+
+# --- New View: View Specific Past Scan (re-displays index_trial.html with saved data) ---
+@login_required
+def view_specific_scan(request, scan_id):
+    # Fetch the specific ScanLog and its associated ScanResults
+    # Ensure 'user' field in ScanLog is used for security
+    scan_log = get_object_or_404(ScanLog, id=scan_id, user=request.user)
+    # Use result_log for the related name
+    scan_results = scan_log.scanresult_set.all().order_by('-perc_of_duplication') # Order by your existing field
+
+    # Pass the user's UserProfile object to the template
+    student_profile = request.user.userprofile if hasattr(request.user, 'userprofile') else None
+
+    context = {
+        'scan_log': scan_log,
+        'scan_results': scan_results,
+        'ai_probability_score': scan_log.ai_probability_score,
+        'burstiness_score': scan_log.burstiness_score,
+        'top_words': scan_log.top_words,
+        'text_snippet': scan_log.text_snippet,
+        'student': student_profile,
+    }
+    return render(request, 'plag/index_trial.html', context) # Render index_trial.html with pre-loaded data
+
+
+
 @login_required
 def student_classroom_detail(request, classroom_id):
     classroom = get_object_or_404(Classroom, id=classroom_id)
