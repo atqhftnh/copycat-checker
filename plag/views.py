@@ -416,8 +416,8 @@ class IndexTrialView(View):
                 if scan_log.overall_plagiarism_percentage is not None:
                     overall_plagiarism_percentage = str(scan_log.overall_plagiarism_percentage)
 
-                if scan_log.ai_score is not None:
-                    ai_score = scan_log.ai_score
+                if scan_log.ai_probability_score is not None:
+                    ai_score = scan_log.ai_probability_score
                 if scan_log.ai_label:
                     ai_label = scan_log.ai_label
 
