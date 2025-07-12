@@ -127,7 +127,7 @@ def student_dashboard_view(request):
         'student': student_profile,
         'user': request.user,
     }
-    return render(request, 'plag/index.html', context) # Render your existing index.html as the dashboard
+    return render(request, 'plag/static/index.html', context) # Render your existing index.html as the dashboard
 
 
 # --- New View: View Specific Past Scan (re-displays index_trial.html with saved data) ---
