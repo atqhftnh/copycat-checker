@@ -141,7 +141,7 @@ class Query(models.Model):
 
 
 class ScanLog(models.Model):
-    
+
     FAILED_TYPE = (
         ('H', 'HTTP error'),
         ('C', 'No content candidates found (initial scan) or matched (post processing)'),
@@ -156,6 +156,13 @@ class ScanLog(models.Model):
     user_ip = models.GenericIPAddressField(blank=True, null=True)
     
     # Existing plagiarism fields
+    fail_type = models.CharField(
+        max_length=1,
+        choices=FAILED_TYPE,
+        blank=True,
+        null=True
+    )
+    
     average_plagiarism_percent = models.FloatField(
         blank=True,
         null=True,
