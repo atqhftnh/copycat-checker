@@ -152,7 +152,7 @@ class ScanLog(models.Model):
         (E, 'Internal processing error'),
         (I, 'Skipped/Ignored'),
     )
-
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     protected_resource = models.ForeignKey(ProtectedResource, null=True, blank=True, on_delete=models.SET_NULL)
     protected_source = models.TextField(null=True, blank=True)  # the text (source) of the protected resource
