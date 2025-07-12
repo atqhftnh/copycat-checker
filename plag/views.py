@@ -88,11 +88,11 @@ def custom_login(request):
                 login(request, user)
                 role = profile.role
                 if role == 'student':
-                    return redirect('index')
+                    return redirect('student_dashboard')
                 elif role == 'lecturer':
                     return redirect('lecturer_dashboard')
                 else:
-                    return redirect('index')
+                    return redirect('homepage')
         
         messages.error(request, "Invalid username or password.")
         return redirect('login')

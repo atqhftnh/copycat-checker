@@ -186,6 +186,7 @@ class ScanLog(models.Model):
     uploaded_file = models.FileField(upload_to='scanned_documents/', null=True, blank=True) # Optional: if you want to store the original file
 
     ai_probability_score = models.FloatField(null=True, blank=True) # Essential for AI score display
+    ai_label = models.CharField(max_length=50, null=True, blank=True)
     burstiness_score = models.FloatField(null=True, blank=True)     # Essential for burstiness score display
     text_snippet = models.TextField(null=True, blank=True)          # Essential for the 'Analyzed Text Sample' display
     top_words = JSONField(null=True, blank=True)
