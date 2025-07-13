@@ -1,3 +1,5 @@
+# plag/migrations/000X_add_missing_scanlog_fields.py
+
 import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
@@ -14,12 +16,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # Use RunPython.noop for ai_probability_score AND burstiness_score
-        # because they already exist in the DB.
+        # Use RunPython.noop for ai_probability_score, burstiness_score, AND top_words
+        # because they now exist in the DB.
         migrations.RunPython(RunPython.noop, RunPython.noop), # For ai_probability_score
         migrations.RunPython(RunPython.noop, RunPython.noop), # For burstiness_score
+        migrations.RunPython(RunPython.noop, RunPython.noop), # For top_words
 
-        # Add only the fields that are STILL missing
+        # Add only the fields that are STILL missing (if any)
         migrations.AddField(
             model_name='scanlog',
             name='ai_label',
@@ -27,14 +30,8 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='scanlog',
-            name='top_words',
-            field=django.db.models.fields.json.JSONField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name='scanlog',
             name='text_snippet',
             field=models.TextField(blank=True, null=True),
-        
         ),
         migrations.AddField(
             model_name='scanlog',
