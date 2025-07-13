@@ -862,3 +862,27 @@ def view_task_detail(request, classroom_id, task_id):
         'pending_count': pending_count,
     }
     return render(request, 'plag/static/view_task_detail.html', context)
+
+
+class DeleteAccountView(LoginRequiredMixin, View):
+    """
+    Handles the deletion of a user's account.
+    Requires the user to be logged in.
+    """
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        try:
+            # IMPORTANT: In a production app, you would add more robust confirmation here,
+            # e.g., asking for password re-entry, or a custom confirmation modal.
+            # For now, the client-side `confirm()` is used in base1.html.
+
+            user.delete() # This deletes the User object and cascades to related objects (like UserProfile)
+            logout(request) # Log the user out after deletion
+            messages.success(request, "Your account has been successfully deleted.")
+            return redirect('login') # Redirect to the login page after deletion
+        except Exception as e:
+            messages.error(request, f"An error occurred while deleting your account: {e}")
+            logger.error(f"Error deleting account for user {user.username}: {e}")
+            # Redirect to a relevant page on error, e.g., dashboard or profile
+            return redirect('student_dashboard') # Assuming student_dashboard is a safe fallback
+
