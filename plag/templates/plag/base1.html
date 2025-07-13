@@ -507,18 +507,26 @@
           <div class="profile-info">
               <div class="profile-info-item">
                   <i class="fas fa-user"></i>
-                  <span>Full Name: </span>
-                  <strong>{{ user.userprofile.full_name|default:user.username }}</strong>
+                  <div class="profile-info-text-container"> {# New container for text #}
+                      <span>Full Name:</span>
+                      <strong>{{ user.userprofile.full_name|default:user.username }}</strong>
+                  </div>
               </div>
               <div class="profile-info-item">
                   <i class="fas fa-envelope"></i>
-                  <span>Email: <strong>{{ user.email|default:"N/A" }}</strong></span>
+                  <div class="profile-info-text-container">
+                      <span>Email:</span>
+                      <strong>{{ user.email|default:"N/A" }}</strong>
+                  </div>
               </div>
               <div class="profile-info-item">
                   <i class="fas fa-user-tag"></i>
-                  <span>Role: <strong>
-                      {% if user.userprofile.is_lecturer %}Lecturer{% else %}Student{% endif %}
-                  </strong></span>
+                  <div class="profile-info-text-container">
+                      <span>Role:</span>
+                      <strong>
+                          {% if user.userprofile.is_lecturer %}Lecturer{% else %}Student{% endif %}
+                      </strong>
+                  </div>
               </div>
           </div>
 
