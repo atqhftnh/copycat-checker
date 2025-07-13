@@ -489,7 +489,13 @@ class IndexTrialView(View):
                 scan_log.ai_label = "API Error"
                 scan_log.ai_score = None # Ensure score is None on error
 
-
+            if request.user.is_authenticated:
+                scan_log.user = request.user
+            else:
+                # Handle cases where user might not be logged in (e.g., if index_trial is public)
+                # Perhaps assign to a default user, or don't save the log, or redirect to login.
+                # For a student dashboard, they *should* be logged in.
+                pass # Or logger.warning("Scan attempted by unauthenticated user.")
             scan_log.save() # Save changes to the scan_log object
 
         context = {
