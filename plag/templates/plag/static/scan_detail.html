@@ -536,13 +536,12 @@
 {% block content %}
 <body class="has-background">
     <main class="dashboard-container">
+
         <!-- Header -->
         <section class="headerr no-print">
             <div class="dashboard-header">
                 <h1 class="dashboard-title">Scan Report</h1>
-                <p class="dashboard-subtitle">
-                    Detailed analysis of your document's originality and AI content
-                </p>
+                <p class="dashboard-subtitle">Detailed analysis of your document's originality and AI content</p>
             </div>
         </section>
 
@@ -559,45 +558,54 @@
             </p>
         </div>
 
-        <!-- Main Content Area -->
+        <!-- Main Content -->
         <div class="container mt-4">
             <div class="results-summary">
                 <h2>Document Authenticity Summary</h2>
-                <p class="text-muted text-center">Report for: **{{ scan_log.document_name|default:"Unnamed Document" }}** | Scanned on: **{{ scan_log.timestamp|date:"F d, Y H:i" }}**</p>
+                <p class="text-muted text-center">
+                    Report for: <strong>{{ scan_log.document_name|default:"Unnamed Document" }}</strong> |
+                    Scanned on: <strong>{{ scan_log.timestamp|date:"F d, Y H:i" }}</strong>
+                </p>
 
                 <div class="summary-grid">
+
                     <!-- Plagiarism Detection Card -->
                     <div class="summary-card">
                         <h3>Plagiarism Detection</h3>
                         <div class="plagiarism-metric text-center">
                             <p>Overall Document Similarity:</p>
                             <div id="overallPlagiarismDisplay"
+                                 {% if scan_log.overall_plagiarism_percentage is not None %}
+                                     {% if scan_log.overall_plagiarism_percentage > 70 %}
+                                         class="high-plagiarism"
+                                     {% elif scan_log.overall_plagiarism_percentage > 30 %}
+                                         class="medium-plagiarism"
+                                     {% else %}
+                                         class="low-plagiarism"
+                                     {% endif %}
+                                 {% endif %}>
                                 {% if scan_log.overall_plagiarism_percentage is not None %}
-                                    {% if scan_log.overall_plagiarism_percentage > 70 %}class="high-plagiarism"
-                                    {% elif scan_log.overall_plagiarism_percentage > 30 %}class="medium-plagiarism"
-                                    {% else %}class="low-plagiarism"
-                                    {% endif %}
-                                {% endif %}>
-                                {% if scan_log.overall_plagiarism_percentage is not None %}
-                                {{ scan_log.overall_plagiarism_percentage|floatformat:2 }}%
+                                    {{ scan_log.overall_plagiarism_percentage|floatformat:2 }}%
                                 {% else %}
-                                N/A
+                                    N/A
                                 {% endif %}
                             </div>
+
                             {% if scan_log.overall_plagiarism_percentage is not None %}
-                            <div class="plagiarism-assessment">
-                                {% if scan_log.overall_plagiarism_percentage > 70 %}
-                                <p class="error">▲ High plagiarism risk detected</p>
-                                <p>Significant portions of this document match existing sources. Review recommended.</p>
-                                {% elif scan_log.overall_plagiarism_percentage > 30 %}
-                                <p class="warning">◼ Moderate plagiarism risk detected</p>
-                                <p>Some content matches other sources. Verification suggested.</p>
-                                {% else %}
-                                <p class="success">▼ Low plagiarism risk detected</p>
-                                <p>Minimal matches found. Document appears original.</p>
-                                {% endif %}
-                            </div>
+                                <div class="plagiarism-assessment">
+                                    {% if scan_log.overall_plagiarism_percentage > 70 %}
+                                        <p class="error">▲ High plagiarism risk detected</p>
+                                        <p>Significant portions of this document match existing sources. Review recommended.</p>
+                                    {% elif scan_log.overall_plagiarism_percentage > 30 %}
+                                        <p class="warning">◼ Moderate plagiarism risk detected</p>
+                                        <p>Some content matches other sources. Verification suggested.</p>
+                                    {% else %}
+                                        <p class="success">▼ Low plagiarism risk detected</p>
+                                        <p>Minimal matches found. Document appears original.</p>
+                                    {% endif %}
+                                </div>
                             {% endif %}
+
                             <div class="plagiarism-details">
                                 <p><small>Analysis based on comparison with {{ scan_results|length }} potential sources</small></p>
                             </div>
@@ -609,98 +617,98 @@
                         <h3>AI Content Analysis</h3>
                         <div class="ai-metric text-center">
                             {% if ai_probability_score is not None %}
-                            <p>AI-Generated Content Probability:</p>
-                            <div class="ai-score {% if ai_probability_score > 50 %}high-ai{% else %}low-ai{% endif %}">
-                                {{ ai_probability_score|floatformat:2 }}%
-                            </div>
+                                <p>AI-Generated Content Probability:</p>
+                                <div class="ai-score {% if ai_probability_score > 50 %}high-ai{% else %}low-ai{% endif %}">
+                                    {{ ai_probability_score|floatformat:2 }}%
+                                </div>
 
-                            <div class="ai-assessment">
-                                {% if ai_probability_score > 50 %}
-                                <p class="error">▲ High probability of AI generation</p>
-                                <p>This document shows strong signs of AI-assisted composition.</p>
-                                {% else %}
-                                <p class="success">▼ Likely human-authored</p>
-                                <p>This document appears to be primarily human-written.</p>
+                                <div class="ai-assessment">
+                                    {% if ai_probability_score > 50 %}
+                                        <p class="error">▲ High probability of AI generation</p>
+                                        <p>This document shows strong signs of AI-assisted composition.</p>
+                                    {% else %}
+                                        <p class="success">▼ Likely human-authored</p>
+                                        <p>This document appears to be primarily human-written.</p>
+                                    {% endif %}
+                                </div>
+
+                                {% if burstiness_score is not None %}
+                                    <div class="burstiness-metric">
+                                        <p>Burstiness Score: <strong>{{ burstiness_score|floatformat:4 }}</strong></p>
+                                        <p><small>(Measures writing pattern variation. Range: 0-1, higher = more human-like)</small></p>
+                                    </div>
                                 {% endif %}
-                            </div>
-
-                            {% if burstiness_score is not None %}
-                            <div class="burstiness-metric">
-                                <p>Burstiness Score: <strong>{{ burstiness_score|floatformat:4 }}</strong></p>
-                                <p><small>(Measures writing pattern variation. Range: 0-1, higher = more human-like)</small></p>
-                            </div>
-                            {% endif %}
                             {% else %}
-                            <p class="error">AI detection analysis unavailable</p>
-                            <p><small>Could not process document for AI content analysis</small></p>
+                                <p class="error">AI detection analysis unavailable</p>
+                                <p><small>Could not process document for AI content analysis</small></p>
                             {% endif %}
                         </div>
                     </div>
 
-                    <!-- Lexical Analysis Card (only shows if top_words exist) -->
+                    <!-- Lexical Analysis Card -->
                     {% if top_words %}
-                    <div class="summary-card">
-                        <h3>Lexical Analysis</h3>
-                        <p class="text-center">Top 10 most frequently used words in this document:</p>
-                        <div class="chart-container">
-                            <canvas id="wordFrequencyChart"></canvas>
+                        <div class="summary-card">
+                            <h3>Lexical Analysis</h3>
+                            <p class="text-center">Top 10 most frequently used words in this document:</p>
+                            <div class="chart-container">
+                                <canvas id="wordFrequencyChart"></canvas>
+                            </div>
                         </div>
-                    </div>
                     {% endif %}
                 </div>
             </div>
 
             <!-- Detailed Matches Section -->
             {% if scan_results %}
-            <div class="detailed-matches-section">
-                <h2>Detailed Source Matches</h2>
-                <div class="table-responsive">
-                    <table class="matches-table table table-striped table-bordered">
-                        <thead>
-                            <tr>
-                                <th width="25%">Source Title</th>
-                                <th width="35%">Description</th>
-                                <th width="25%">URL</th>
-                                <th width="15%">Similarity</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for result in scan_results %}
-                            <tr>
-                                <td class="break">{{ result.match_title|default:"Untitled Source" }}</td>
-                                <td class="break">{{ result.match_desc|default:"No description available" }}</td>
-                                <td class="break">
-                                    {% if result.match_url %}
-                                    <a href="{{ result.match_url }}" target="_blank">{{ result.match_display_url|truncatechars:40 }}</a>
-                                    {% else %}
-                                    {{ result.match_display_url|default:"N/A" }}
-                                    {% endif %}
-                                </td>
-                                <td class="break">{{ result.perc_of_duplication|floatformat:1 }}%</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <div class="detailed-matches-section">
+                    <h2>Detailed Source Matches</h2>
+                    <div class="table-responsive">
+                        <table class="matches-table table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th width="25%">Source Title</th>
+                                    <th width="35%">Description</th>
+                                    <th width="25%">URL</th>
+                                    <th width="15%">Similarity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in scan_results %}
+                                    <tr>
+                                        <td class="break">{{ result.match_title|default:"Untitled Source" }}</td>
+                                        <td class="break">{{ result.match_desc|default:"No description available" }}</td>
+                                        <td class="break">
+                                            {% if result.match_url %}
+                                                <a href="{{ result.match_url }}" target="_blank">{{ result.match_display_url|truncatechars:40 }}</a>
+                                            {% else %}
+                                                {{ result.match_display_url|default:"N/A" }}
+                                            {% endif %}
+                                        </td>
+                                        <td class="break">{{ result.perc_of_duplication|floatformat:1 }}%</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
             {% else %}
-            <div class="detailed-matches-section">
-                <h2>Detailed Source Matches</h2>
-                <p class="alert alert-info text-center">No significant plagiarism matches found for this document.</p>
-            </div>
+                <div class="detailed-matches-section">
+                    <h2>Detailed Source Matches</h2>
+                    <p class="alert alert-info text-center">No significant plagiarism matches found for this document.</p>
+                </div>
             {% endif %}
 
-            <!-- Text Sample Section -->
+            <!-- Text Snippet Section -->
             {% if text_snippet %}
-            <div class="text-sample-section">
-                <h2>Analyzed Text Sample</h2>
-                <p>The following text excerpt was analyzed:</p>
-                <pre>{{ text_snippet }}</pre>
-                <p class="text-muted no-print"><small>Sample limited to 500 characters for demonstration</small></p>
-            </div>
+                <div class="text-sample-section">
+                    <h2>Analyzed Text Sample</h2>
+                    <p>The following text excerpt was analyzed:</p>
+                    <pre>{{ text_snippet }}</pre>
+                    <p class="text-muted no-print"><small>Sample limited to 500 characters for demonstration</small></p>
+                </div>
             {% endif %}
 
-            <!-- Action Buttons: Print and Back to Dashboard -->
+            <!-- Action Buttons -->
             <div class="report-actions no-print">
                 <button class="print-button" id="printButton" onclick="preparePrint()">
                     <i class="fas fa-print"></i> Print Report
@@ -715,102 +723,66 @@
 {% endblock %}
 
 {% block pagescripts %}
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script type="text/javascript">
-    // ===== PRINT FUNCTION =====
-    function preparePrint() {
-        console.log("Print button clicked. preparePrint function called.");
-        try {
-            // Show print-specific elements
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript">
+        function preparePrint() {
             $('.print-header, .print-footer').show();
-
-            // Add a small delay to ensure elements are visible before printing
             setTimeout(function () {
-                console.log("Calling window.print()...");
                 window.print();
-
-                // Hide print elements again after printing
                 setTimeout(function () {
-                    console.log("Hiding print elements after print dialog closed.");
                     $('.print-header, .print-footer').hide();
                 }, 500);
             }, 200);
-        } catch (e) {
-            console.error("Error in preparePrint function:", e);
         }
-    }
 
-    // Define top_words data as a JavaScript variable
-    // This makes the data available to JavaScript without needing Django template tags inside functions
-    var chartTopWordsData = {{ top_words|safe }}; // Use |safe to prevent auto-escaping of JSON
+        var chartTopWordsData = {{ top_words|safe }};
 
-    // ===== CHART INITIALIZATION =====
-    function initWordFrequencyChart(topWords) {
-        var ctx = document.getElementById('wordFrequencyChart');
-        if (ctx && topWords && topWords.length > 0) { // Check if canvas element exists and data is not empty
-            var labels = [];
-            var data = [];
-            var backgroundColors = [];
+        function initWordFrequencyChart(topWords) {
+            var ctx = document.getElementById('wordFrequencyChart');
+            if (ctx && topWords && topWords.length > 0) {
+                var labels = [], data = [], backgroundColors = [];
+                topWords.forEach(function (item) {
+                    labels.push(item[0]);
+                    data.push(item[1]);
+                    backgroundColors.push(getRandomColor());
+                });
 
-            topWords.forEach(function (item) {
-                labels.push(item[0]); // word
-                data.push(item[1]); // count
-                backgroundColors.push(getRandomColor());
-            });
-
-            new Chart(ctx.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Word Frequency',
-                        data: data,
-                        backgroundColor: backgroundColors,
-                        borderColor: '#495057',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Occurrences',
-                                font: {
-                                    weight: 'bold'
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(0,0,0,0.05)'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Words',
-                                font: {
-                                    weight: 'bold'
-                                }
-                            },
-                            grid: {
-                                display: false
-                            }
-                        }
+                new Chart(ctx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Word Frequency',
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderColor: '#495057',
+                            borderWidth: 1
+                        }]
                     },
-                    plugins: {
-                        legend: {
-                            display: false
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Occurrences', font: { weight: 'bold' } },
+                                grid: { color: 'rgba(0,0,0,0.05)' }
+                            },
+                            x: {
+                                title: { display: true, text: 'Words', font: { weight: 'bold' } },
+                                grid: { display: false }
+                            }
                         },
-                        tooltip: {
-                            callbacks: {
-                                label: function (context) {
-                                    return context.parsed.y + ' occurrence' + (context.parsed.y !== 1 ? 's' : '');
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return context.parsed.y + ' occurrence' + (context.parsed.y !== 1 ? 's' : '');
+                                    }
                                 }
                             }
                         }
@@ -818,29 +790,16 @@
                 });
 
                 function getRandomColor() {
-                    var colors = [
-                        '#4e79a7', '#f28e2b', '#e15759', '#76b7b2',
-                        '#59a14f', '#edc948', '#b07aa1', '#ff9da7',
-                        '#9c755f', '#bab0ac'
-                    ];
+                    var colors = ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f',
+                                  '#edc948', '#b07aa1', '#ff9da7', '#9c755f', '#bab0ac'];
                     return colors[Math.floor(Math.random() * colors.length)];
                 }
             }
         }
 
-        // ===== DOCUMENT READY =====
         $(document).ready(function () {
-            // Ensure jQuery is loaded before trying to use it
-            if (typeof jQuery != 'undefined') {
-                console.log("jQuery is loaded.");
-                // Enable the print button once the DOM is fully loaded for past scans
-                $('#printButton').prop('disabled', false);
-
-                // Initialize Word Frequency Chart if top_words exist
-                initWordFrequencyChart(chartTopWordsData); // Pass the JavaScript variable
-            } else {
-                console.error("jQuery is not loaded. Print button and chart may not function.");
-            }
+            $('#printButton').prop('disabled', false);
+            initWordFrequencyChart(chartTopWordsData);
         });
     </script>
 {% endblock %}
