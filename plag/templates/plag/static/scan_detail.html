@@ -1,504 +1,780 @@
-{% load static %} {# If you use static files like CSS/JS #}
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'plag/base.html' %}
+{% load static %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scan Report - {{ scan_log.document_name|default:"Unnamed Document" }}</title>
-    {# Link your CSS frameworks, e.g., Bootstrap #}
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    {# Add your custom CSS here if any #}
-    <link rel="stylesheet" href="{% static 'css/your_custom_styles.css' %}">
-    <style type="text/css">
-        /* Add styles for the buttons container */
-        .report-actions {
-            display: flex;
+{% block title %}Scan Report - {{ scan_log.document_name|default:"Unnamed Document" }}{% endblock %}
+{% block desc %}Official report from CopyCat Checker{% endblock %}
+
+{% block header_section %}
+<link rel="stylesheet" href="{% static 'plag/styles/background_styles.css' %}">
+<style type="text/css">
+    /* General Container Styles for consistency with dashboard */
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 32px 16px;
+    }
+
+    /* Header Section */
+    .headerr {
+        padding: 48px 20px;
+        text-align: center;
+    }
+
+    .dashboard-header {
+        text-align: center;
+        background-color: rgba(255, 255, 255, 0.85);
+        border-radius: 16px;
+        max-width: 1000px;
+        margin: 0 auto;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(235, 190, 135, 0.2);
+    }
+
+    .dashboard-title {
+        font-size: 36px;
+        font-weight: 700;
+        background: linear-gradient(to right, #ff7d0b, #ebbe87);
+        -webkit-background-clip: text;
+        color: transparent;
+        margin-bottom: 16px;
+        margin-top: 20px;
+    }
+
+    .dashboard-subtitle {
+        color: #6b7280;
+        font-size: 18px;
+        margin-bottom: 48px;
+        padding-bottom: 20px;
+    }
+
+    /* Report Summary Section */
+    .results-summary {
+        background: white; /* Changed from #f8f9fa to white for consistency */
+        border-radius: 16px; /* Increased border-radius */
+        padding: 48px; /* Increased padding */
+        margin-bottom: 48px; /* Increased margin */
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Stronger shadow */
+        border: 1px solid rgba(235, 190, 135, 0.2); /* Consistent border */
+    }
+
+    .results-summary h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #ff7d0b; /* Consistent orange color */
+        margin-bottom: 32px;
+        text-align: center;
+    }
+
+    .summary-grid {
+        display: flex; /* Use flexbox for better control */
+        flex-wrap: wrap;
+        gap: 25px;
+        margin-bottom: 25px;
+    }
+
+    .summary-card {
+        background: linear-gradient(to bottom right, rgba(156, 215, 221, 0.05), rgba(235, 190, 135, 0.05)); /* Gradient background */
+        border: 1px solid rgba(156, 215, 221, 0.2); /* Consistent border */
+        border-radius: 16px; /* Consistent border-radius */
+        padding: 24px; /* Consistent padding */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+        flex: 1; /* Allow cards to grow */
+        min-width: 300px; /* Minimum width before wrapping */
+    }
+
+    .summary-card h3 {
+        font-size: 20px; /* Slightly larger heading */
+        font-weight: 700;
+        color: #111827;
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 10px;
+        margin-top: 0;
+        margin-bottom: 15px;
+    }
+
+    /* Plagiarism & AI Score Displays */
+    #overallPlagiarismDisplay, .ai-score {
+        font-size: 2.5em;
+        font-weight: bold;
+        transition: color 0.3s ease-in-out;
+        margin-bottom: 10px;
+    }
+
+    #overallPlagiarismDisplay.high-plagiarism { color: #d9534f; }
+    #overallPlagiarismDisplay.medium-plagiarism { color: #f0ad4e; }
+    #overallPlagiarismDisplay.low-plagiarism { color: #5cb85c; }
+
+    .ai-score.high-ai { color: #dc3545; }
+    .ai-score.low-ai { color: #28a745; }
+
+    .plagiarism-assessment p, .ai-assessment p {
+        margin-bottom: 5px;
+        font-size: 0.95em;
+    }
+
+    .plagiarism-assessment .error, .ai-assessment .error { color: #dc3545; font-weight: bold; }
+    .plagiarism-assessment .warning, .ai-assessment .warning { color: #ffc107; font-weight: bold; }
+    .plagiarism-assessment .success, .ai-assessment .success { color: #28a745; font-weight: bold; }
+
+
+    /* Chart Container */
+    .chart-container {
+        width: 100%;
+        height: 350px;
+        margin: 25px 0 0; /* Adjusted margin */
+    }
+
+    /* Detailed Matches Section */
+    .detailed-matches-section {
+        background: white;
+        border-radius: 16px;
+        padding: 48px;
+        margin-bottom: 48px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(235, 190, 135, 0.2);
+    }
+
+    .detailed-matches-section h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #ff7d0b;
+        margin-bottom: 32px;
+        text-align: center;
+    }
+
+    .matches-table {
+        width: 100%;
+        margin-top: 20px;
+        border-collapse: collapse;
+    }
+
+    .matches-table th, .matches-table td {
+        padding: 12px;
+        border: 1px solid #e9ecef;
+        text-align: left;
+    }
+
+    .matches-table thead th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+        color: #495057;
+    }
+
+    .matches-table tbody tr:nth-child(odd) {
+        background-color: #fcfcfc;
+    }
+
+    .matches-table a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .matches-table a:hover {
+        text-decoration: underline;
+    }
+
+    /* Text Sample Section */
+    .text-sample-section {
+        background: white;
+        border-radius: 16px;
+        padding: 48px;
+        margin-bottom: 48px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(235, 190, 135, 0.2);
+    }
+
+    .text-sample-section h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #ff7d0b;
+        margin-bottom: 32px;
+        text-align: center;
+    }
+
+    pre {
+        background: #f8f9fa;
+        padding: 1em;
+        border-radius: 8px;
+        overflow-x: auto;
+        border-left: 4px solid #6c757d;
+        white-space: pre-wrap; /* Ensure text wraps */
+        word-wrap: break-word; /* Ensure long words break */
+    }
+
+    /* Action Buttons */
+    .report-actions {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 40px;
+        margin-bottom: 60px;
+    }
+
+    .print-button, .back-to-dashboard-button {
+        padding: 15px 30px;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease-in-out;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .print-button {
+        background-color: #9cd7dd; /* Teal color */
+        color: #374151;
+    }
+
+    .print-button:hover:not(:disabled) {
+        background-color: #67a3af;
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(156, 215, 221, 0.4);
+    }
+
+    .print-button:disabled {
+        background-color: #d1d5db;
+        color: #9ca3af;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+    }
+
+    .back-to-dashboard-button {
+        background-color: #ebbe87; /* Orange-ish color */
+        color: #374151;
+    }
+
+    .back-to-dashboard-button:hover {
+        background-color: #d4a574;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(235, 190, 135, 0.4);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .results-summary, .detailed-matches-section, .text-sample-section {
+            padding: 30px 20px;
+        }
+        .summary-grid {
+            flex-direction: column;
+        }
+        .print-button, .back-to-dashboard-button {
+            width: 100%;
             justify-content: center;
-            gap: 15px;
-            /* Space between buttons */
-            margin: 30px 0;
+        }
+        .report-actions {
+            flex-direction: column;
+        }
+    }
+
+    /* Print Styles (kept mostly original) */
+    @media print {
+        @page {
+            size: A4;
+            margin: 1.5cm 2cm;
+
+            @top-left {
+                content: "CopyCat Checker Report";
+                font-size: 10pt;
+                color: #6c757d;
+                font-family: "Helvetica Neue", Arial, sans-serif;
+            }
+
+            @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 10pt;
+                color: #6c757d;
+                font-family: "Helvetica Neue", Arial, sans-serif;
+            }
         }
 
-        .print-button,
-        .back-to-dashboard-button {
-            background: #20c997;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            display: inline-block;
+        body {
+            font-family: "Georgia", "Times New Roman", serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #212529;
+            background: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .print-header {
+            display: block !important;
             text-align: center;
-            transition: all 0.3s;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5cm;
+            padding-bottom: 1cm;
+            border-bottom: 2px solid #343a40;
+        }
+
+        .print-header img {
+            height: 1.5cm;
+            margin-bottom: 0.5cm;
+            opacity: 0.9;
+        }
+
+        .print-header h1 {
+            font-size: 22pt;
+            margin: 0 0 0.25cm 0;
+            color: #212529;
+            font-weight: 600;
+        }
+
+        .print-header .subtitle {
+            font-size: 13pt;
+            margin: 0;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .print-header .meta {
+            font-size: 10pt;
+            margin: 0.5cm 0 0;
+            color: #6c757d;
+        }
+
+        .print-footer {
+            display: block !important;
+            text-align: center;
+            margin-top: 1cm;
+            padding-top: 0.5cm;
+            border-top: 1px solid #343a40;
+            font-size: 9pt;
+            color: #6c757d;
+        }
+
+        .no-print,
+        .sidebar,
+        nav,
+        .nav,
+        .navbar {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            overflow: hidden !important;
+        }
+
+        footer {
+            display: none !important;
+        }
+
+        .container {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+        }
+
+        .results-summary,
+        .summary-card,
+        pre,
+        .chart-container {
+            page-break-inside: avoid;
+        }
+
+        h2 {
+            font-size: 15pt;
+            page-break-after: avoid;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 0.2cm;
+            color: #343a40;
+        }
+
+        /* Force Detailed Source Matches to start on new page */
+        h2:nth-of-type(1),
+        /* Lexical Analysis */
+        h2:nth-of-type(2) {
+            /* Detailed Source Matches */
+            page-break-before: always;
+            margin-top: 0;
+            padding-top: 0.5cm;
+        }
+
+        /* Remove extra space when these are first on page */
+        h2:nth-of-type(1):first-child,
+        h2:nth-of-type(2):first-child {
+            padding-top: 0;
+        }
+
+        /* Adjust spacing after these headings */
+        h2:nth-of-type(1)+.word-frequency,
+        h2:nth-of-type(2)+.table-responsive {
+            margin-top: 0.5cm;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.5cm 0 0.75cm;
+            font-size: 10pt;
+            page-break-inside: auto;
+        }
+
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        tfoot {
+            display: table-footer-group;
+        }
+
+        table th {
+            background-color: #f8f9fa !important;
+            color: #212529 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            font-weight: 600;
+        }
+
+        table th,
+        table td {
+            border: 1px solid #dee2e6;
+            padding: 0.3cm 0.5cm;
+            text-align: left;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background: none;
+            border: 1px solid #dee2e6;
+            font-family: "Courier New", monospace;
+            font-size: 9.5pt;
+            line-height: 1.4;
+            margin: 0.5cm 0;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25cm;
+            margin-bottom: 1.25cm;
+        }
+
+        .summary-card {
+            border: 1px solid #dee2e6;
+            padding: 0.75cm;
+            background: #fff !important;
+            page-break-inside: avoid;
+        }
+
+        .chart-container {
+            height: 7cm;
+            margin: 0.75cm 0;
+        }
+
+        #overallPlagiarismDisplay {
+            font-size: 26pt;
+            margin: 0.4cm 0;
+            display: block;
+        }
+
+        .success {
+            color: #28a745 !important;
+        }
+
+        .error {
+            color: #dc3545 !important;
+        }
+
+        .warning {
+            color: #ffc107 !important;
+        }
+
+        a {
+            color: #007bff;
             text-decoration: none;
-            /* For the anchor tag */
         }
 
-        .print-button:hover {
-            background: #1aa179;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        .break {
+            word-break: break-word;
+            hyphens: auto;
         }
+    }
+</style>
+{% endblock %}
 
-        .print-button:disabled {
-            background-color: #cccccc;
-            /* Grey out when disabled */
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
-        }
+{% block content %}
+<body class="has-background">
+    <main class="dashboard-container">
+        <!-- Header -->
+        <section class="headerr no-print">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Scan Report</h1>
+                <p class="dashboard-subtitle">
+                    Detailed analysis of your document's originality and AI content
+                </p>
+            </div>
+        </section>
 
-        .back-to-dashboard-button {
-            background: #6c757d;
-            /* A different color for distinction */
-        }
-
-        .back-to-dashboard-button:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Print styles from index_trial.html to ensure consistent printing */
-        @media print {
-            @page {
-                size: A4;
-                margin: 1.5cm 2cm;
-
-                @top-left {
-                    content: "CopyCat Checker Report";
-                    font-size: 10pt;
-                    color: #6c757d;
-                    font-family: "Helvetica Neue", Arial, sans-serif;
-                }
-
-                @bottom-right {
-                    content: "Page " counter(page) " of " counter(pages);
-                    font-size: 10pt;
-                    color: #6c757d;
-                    font-family: "Helvetica Neue", Arial, sans-serif;
-                }
-            }
-
-            body {
-                font-family: "Georgia", "Times New Roman", serif;
-                font-size: 11pt;
-                line-height: 1.5;
-                color: #212529;
-                background: none;
-                padding: 0;
-                margin: 0;
-            }
-
-            .print-header {
-                display: block !important;
-                text-align: center;
-                margin-bottom: 1.5cm;
-                padding-bottom: 1cm;
-                border-bottom: 2px solid #343a40;
-            }
-
-            .print-header img {
-                height: 1.5cm;
-                margin-bottom: 0.5cm;
-                opacity: 0.9;
-            }
-
-            .print-header h1 {
-                font-size: 22pt;
-                margin: 0 0 0.25cm 0;
-                color: #212529;
-                font-weight: 600;
-            }
-
-            .print-header .subtitle {
-                font-size: 13pt;
-                margin: 0;
-                color: #6c757d;
-                font-style: italic;
-            }
-
-            .print-header .meta {
-                font-size: 10pt;
-                margin: 0.5cm 0 0;
-                color: #6c757d;
-            }
-
-            .print-footer {
-                display: block !important;
-                text-align: center;
-                margin-top: 1cm;
-                padding-top: 0.5cm;
-                border-top: 1px solid #343a40;
-                font-size: 9pt;
-                color: #6c757d;
-            }
-
-            .no-print,
-            .sidebar,
-            nav,
-            .nav,
-            .navbar {
-                display: none !important;
-                visibility: hidden !important;
-                height: 0 !important;
-                overflow: hidden !important;
-            }
-
-            footer {
-                display: none !important;
-            }
-
-            .container {
-                width: 100% !important;
-                max-width: 100% !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                box-shadow: none !important;
-            }
-
-            .results-summary,
-            .summary-card,
-            pre,
-            .chart-container {
-                page-break-inside: avoid;
-            }
-
-            h2 {
-                font-size: 15pt;
-                page-break-after: avoid;
-                border-bottom: 1px solid #dee2e6;
-                padding-bottom: 0.2cm;
-                color: #343a40;
-            }
-
-            /* Force Detailed Source Matches to start on new page */
-            h2:nth-of-type(1),
-            /* Lexical Analysis */
-            h2:nth-of-type(2) {
-                /* Detailed Source Matches */
-                page-break-before: always;
-                margin-top: 0;
-                padding-top: 0.5cm;
-            }
-
-            /* Remove extra space when these are first on page */
-            h2:nth-of-type(1):first-child,
-            h2:nth-of-type(2):first-child {
-                padding-top: 0;
-            }
-
-            /* Adjust spacing after these headings */
-            h2:nth-of-type(1)+.word-frequency,
-            h2:nth-of-type(2)+.table-responsive {
-                margin-top: 0.5cm;
-            }
-
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 0.5cm 0 0.75cm;
-                font-size: 10pt;
-                page-break-inside: auto;
-            }
-
-            tr {
-                page-break-inside: avoid;
-                page-break-after: auto;
-            }
-
-            thead {
-                display: table-header-group;
-            }
-
-            tfoot {
-                display: table-footer-group;
-            }
-
-            table th {
-                background-color: #f8f9fa !important;
-                color: #212529 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                font-weight: 600;
-            }
-
-            table th,
-            table td {
-                border: 1px solid #dee2e6;
-                padding: 0.3cm 0.5cm;
-                text-align: left;
-            }
-
-            pre {
-                white-space: pre-wrap;
-                word-wrap: break-word;
-                background: none;
-                border: 1px solid #dee2e6;
-                font-family: "Courier New", monospace;
-                font-size: 9.5pt;
-                line-height: 1.4;
-                margin: 0.5cm 0;
-            }
-
-            .summary-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 1.25cm;
-                margin-bottom: 1.25cm;
-            }
-
-            .summary-card {
-                border: 1px solid #dee2e6;
-                padding: 0.75cm;
-                background: #fff !important;
-                page-break-inside: avoid;
-            }
-
-            .chart-container {
-                height: 7cm;
-                margin: 0.75cm 0;
-            }
-
-            #overallPlagiarismDisplay {
-                font-size: 26pt;
-                margin: 0.4cm 0;
-                display: block;
-            }
-
-            .success {
-                color: #28a745 !important;
-            }
-
-            .error {
-                color: #dc3545 !important;
-            }
-
-            .warning {
-                color: #ffc107 !important;
-            }
-
-            a {
-                color: #007bff;
-                text-decoration: none;
-            }
-
-            .break {
-                word-break: break-word;
-                hyphens: auto;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="{% url 'student_dashboard' %}">PlagiarismGuard</a>
-        <div class="collapse navbar-collapse">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'student_dashboard' %}">Dashboard</a>
-                </li>
-                {# Add other navigation links if needed #}
-            </ul>
+        <!-- Print Header -->
+        <div class="print-header" style="display: none;">
+            <img src="{% static 'plag/icon/logo.png' %}" alt="Copycat Checker">
+            <h1>Plagiarism & AI Content Analysis Report</h1>
+            <p class="subtitle">Comprehensive Document Authenticity Assessment</p>
+            <p class="meta">
+                Report generated: {{ scan_log.timestamp|date:"F j, Y \a\t H:i" }}<br>
+                Document ID: PG-{{ scan_log.id|stringformat:"06d" }}<br><br>
+                Student Name: {{ student.full_name|default:"N/A" }}<br>
+                Student ID: {{ student.student_id|default:"-" }}
+            </p>
         </div>
-    </nav>
 
-    <div class="container mt-4">
-        <h2 class="mb-4">Scan Report for: **{{ scan_log.document_name|default:"Unnamed Document" }}**</h2>
-        <p class="text-muted">Scanned on: **{{ scan_log.timestamp|date:"F d, Y H:i" }}**</p>
+        <!-- Main Content Area -->
+        <div class="container mt-4">
+            <div class="results-summary">
+                <h2>Document Authenticity Summary</h2>
+                <p class="text-muted text-center">Report for: **{{ scan_log.document_name|default:"Unnamed Document" }}** | Scanned on: **{{ scan_log.timestamp|date:"F d, Y H:i" }}**</p>
 
-        <hr>
-
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card mb-3">
-                    <div class="card-header bg-primary text-white">
-                        <h4 class="mb-0">Plagiarism Analysis</h4>
-                    </div>
-                    <div class="card-body">
-                        <p class="lead">Overall Plagiarism Percentage: **{{scan_log.overall_plagiarism_percentage|default:"N/A" }}%**</p>
-                        {% if scan_results %}
-                        <h5 class="mt-4">Matching Sources:</h5>
-                        <ul class="list-group list-group-flush">
-                            {% for result in scan_results %}
-                            <li class="list-group-item">
-                                <p class="mb-1">Match: **{{ result.perc_of_duplication|default:"N/A" }}%** from
-                                    {% if result.match_url %}
-                                        <a href="{{ result.match_url }}" target="_blank">{{result.match_display_url|default:"Unknown Source" }}</a>
-                                    {% else %}
-                                        {{ result.match_display_url|default:"Unknown Source" }}
+                <div class="summary-grid">
+                    <!-- Plagiarism Detection Card -->
+                    <div class="summary-card">
+                        <h3>Plagiarism Detection</h3>
+                        <div class="plagiarism-metric text-center">
+                            <p>Overall Document Similarity:</p>
+                            <div id="overallPlagiarismDisplay"
+                                {% if scan_log.overall_plagiarism_percentage is not None %}
+                                    {% if scan_log.overall_plagiarism_percentage > 70 %}class="high-plagiarism"
+                                    {% elif scan_log.overall_plagiarism_percentage > 30 %}class="medium-plagiarism"
+                                    {% else %}class="low-plagiarism"
                                     {% endif %}
-                                </p>
-                                {% if result.match_title %}
-                                    <p class="text-muted small mb-0">**{{ result.match_title }}**</p>
+                                {% endif %}>
+                                {% if scan_log.overall_plagiarism_percentage is not None %}
+                                {{ scan_log.overall_plagiarism_percentage|floatformat:2 }}%
+                                {% else %}
+                                N/A
                                 {% endif %}
-                                {% if result.match_desc %}
-                                    <p class="text-muted small mb-0">{{ result.match_desc }}</p>
-                                {%endif %}
-                            </li>
-                            {% endfor %}
-                        </ul>
-                        {% else %}
-                            <p class="alert alert-info">No plagiarism matches found or analysis pending.</p>
-                        {% endif %}
+                            </div>
+                            {% if scan_log.overall_plagiarism_percentage is not None %}
+                            <div class="plagiarism-assessment">
+                                {% if scan_log.overall_plagiarism_percentage > 70 %}
+                                <p class="error">▲ High plagiarism risk detected</p>
+                                <p>Significant portions of this document match existing sources. Review recommended.</p>
+                                {% elif scan_log.overall_plagiarism_percentage > 30 %}
+                                <p class="warning">◼ Moderate plagiarism risk detected</p>
+                                <p>Some content matches other sources. Verification suggested.</p>
+                                {% else %}
+                                <p class="success">▼ Low plagiarism risk detected</p>
+                                <p>Minimal matches found. Document appears original.</p>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            <div class="plagiarism-details">
+                                <p><small>Analysis based on comparison with {{ scan_results|length }} potential sources</small></p>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- AI Content Analysis Card -->
+                    <div class="summary-card">
+                        <h3>AI Content Analysis</h3>
+                        <div class="ai-metric text-center">
+                            {% if ai_probability_score is not None %}
+                            <p>AI-Generated Content Probability:</p>
+                            <div class="ai-score {% if ai_probability_score > 50 %}high-ai{% else %}low-ai{% endif %}">
+                                {{ ai_probability_score|floatformat:2 }}%
+                            </div>
+
+                            <div class="ai-assessment">
+                                {% if ai_probability_score > 50 %}
+                                <p class="error">▲ High probability of AI generation</p>
+                                <p>This document shows strong signs of AI-assisted composition.</p>
+                                {% else %}
+                                <p class="success">▼ Likely human-authored</p>
+                                <p>This document appears to be primarily human-written.</p>
+                                {% endif %}
+                            </div>
+
+                            {% if burstiness_score is not None %}
+                            <div class="burstiness-metric">
+                                <p>Burstiness Score: <strong>{{ burstiness_score|floatformat:4 }}</strong></p>
+                                <p><small>(Measures writing pattern variation. Range: 0-1, higher = more human-like)</small></p>
+                            </div>
+                            {% endif %}
+                            {% else %}
+                            <p class="error">AI detection analysis unavailable</p>
+                            <p><small>Could not process document for AI content analysis</small></p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Lexical Analysis Card (only shows if top_words exist) -->
+                    {% if top_words %}
+                    <div class="summary-card">
+                        <h3>Lexical Analysis</h3>
+                        <p class="text-center">Top 10 most frequently used words in this document:</p>
+                        <div class="chart-container">
+                            <canvas id="wordFrequencyChart"></canvas>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card mb-3">
-                    <div class="card-header bg-success text-white">
-                        <h4 class="mb-0">AI Detection Analysis</h4>
-                    </div>
-                    <div class="card-body">
-                        <p class="lead">**{{ analysis_message|default:"No AI analysis performed." }}**</p>
-                        {% if ai_probability_score is not None %}
-                            <p>AI Probability Score: **{{ ai_probability_score|floatformat:2 }}%**</p>
-                        {% endif %}
-                        {% if burstiness_score is not None %}
-                            <p>Burstiness Score: **{{ burstiness_score|floatformat:2 }}**</p>
-                        {% endif %}
-                        {% if top_words %}
-                            <p>Top Words: **{{ top_words|join:", " }}**</p>
-                        {% endif %}
-                        {% if text_snippet %}
-                            <h5 class="mt-4">Text Snippet:</h5>
-                            <blockquote class="blockquote bg-light p-3 rounded border-left border-dark">
-                                <p class="mb-0">{{ text_snippet }}</p>
-                            </blockquote>
-                        {% endif %}
-                    </div>
+
+            <!-- Detailed Matches Section -->
+            {% if scan_results %}
+            <div class="detailed-matches-section">
+                <h2>Detailed Source Matches</h2>
+                <div class="table-responsive">
+                    <table class="matches-table table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th width="25%">Source Title</th>
+                                <th width="35%">Description</th>
+                                <th width="25%">URL</th>
+                                <th width="15%">Similarity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in scan_results %}
+                            <tr>
+                                <td class="break">{{ result.match_title|default:"Untitled Source" }}</td>
+                                <td class="break">{{ result.match_desc|default:"No description available" }}</td>
+                                <td class="break">
+                                    {% if result.match_url %}
+                                    <a href="{{ result.match_url }}" target="_blank">{{ result.match_display_url|truncatechars:40 }}</a>
+                                    {% else %}
+                                    {{ result.match_display_url|default:"N/A" }}
+                                    {% endif %}
+                                </td>
+                                <td class="break">{{ result.perc_of_duplication|floatformat:1 }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
+            </div>
+            {% else %}
+            <div class="detailed-matches-section">
+                <h2>Detailed Source Matches</h2>
+                <p class="alert alert-info text-center">No significant plagiarism matches found for this document.</p>
+            </div>
+            {% endif %}
+
+            <!-- Text Sample Section -->
+            {% if text_snippet %}
+            <div class="text-sample-section">
+                <h2>Analyzed Text Sample</h2>
+                <p>The following text excerpt was analyzed:</p>
+                <pre>{{ text_snippet }}</pre>
+                <p class="text-muted no-print"><small>Sample limited to 500 characters for demonstration</small></p>
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons: Print and Back to Dashboard -->
+            <div class="report-actions no-print">
+                <button class="print-button" id="printButton" onclick="preparePrint()">
+                    <i class="fas fa-print"></i> Print Report
+                </button>
+                <a href="{% url 'student_dashboard' %}" class="back-to-dashboard-button">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
             </div>
         </div>
+    </main>
+</body>
+{% endblock %}
 
-        <hr>
-        {# Removed the single "Back to Dashboard" button here, replaced by the action buttons below #}
+{% block pagescripts %}
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="text/javascript">
+    // ===== PRINT FUNCTION =====
+    function preparePrint() {
+        // Show print-specific elements
+        $('.print-header, .print-footer').show();
 
-    </div>
+        // Add a small delay to ensure elements are visible before printing
+        setTimeout(function () {
+            window.print();
 
-    <!-- Print Header -->
-    <div class="print-header" style="display: none;">
-        <img src="{% static 'plag/icon/logo.png' %}" alt="Copycat Checker">
-        <h1>Plagiarism & AI Content Analysis Report</h1>
-        <p class="subtitle">Comprehensive Document Authenticity Assessment</p>
-        <p class="meta">
-            Report generated: {{ scan_log.created_at|date:"F j, Y \a\t H:i" }}<br>
-            Document ID: PG-{{ scan_log.id|stringformat:"06d" }}<br><br>
-            Student Name: {{ student.full_name }}<br>
-            Student ID: {{ student.student_id|default:"-" }}
-        </p>
-    </div>
-
-    <!-- Print Footer -->
-    <div class="print-footer" style="display: none;">
-        <p>This report is confidential and intended solely for the use of the individual or entity to whom it is addressed. </p>
-        <p>Generated by CopyCat Checker • &copy; {% now "Y" %} All Rights Reserved</p>
-    </div>
-
-    <!-- Action Buttons: Print and Back to Dashboard -->
-    <div class="report-actions no-print">
-        <button class="print-button" id="printButton" onclick="preparePrint()" disabled>
-            <i class="fas fa-print"></i> Print Report
-        </button>
-        <a href="{% url 'student_dashboard' %}" class="back-to-dashboard-button">
-            <i class="fas fa-arrow-left"></i> Back to Dashboard
-        </a>
-    </div>
-
-    {# Link your JavaScript files here #}
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script type="text/javascript">
-        // ===== PRINT FUNCTION =====
-        function preparePrint() {
-            // Show print-specific elements
-            $('.print-header, .print-footer').show();
-
-            // Add a small delay to ensure elements are visible before printing
+            // Hide print elements again after printing
             setTimeout(function () {
-                window.print();
+                $('.print-header, .print-footer').hide();
+            }, 500);
+        }, 200);
+    }
 
-                // Hide print elements again after printing
-                setTimeout(function () {
-                    $('.print-header, .print-footer').hide();
-                }, 500);
-            }, 200);
-        }
+    // Define top_words data as a JavaScript variable
+    // This makes the data available to JavaScript without needing Django template tags inside functions
+    var chartTopWordsData = {{ top_words|safe }}; // Use |safe to prevent auto-escaping of JSON
 
-        // Define top_words data as a JavaScript variable
-        // This makes the data available to JavaScript without needing Django template tags inside functions
-        var chartTopWordsData = {{ top_words | safe }}; // Use |safe to prevent auto-escaping of JSON
+    // ===== CHART INITIALIZATION =====
+    function initWordFrequencyChart(topWords) {
+        var ctx = document.getElementById('wordFrequencyChart');
+        if (ctx && topWords && topWords.length > 0) { // Check if canvas element exists and data is not empty
+            var labels = [];
+            var data = [];
+            var backgroundColors = [];
 
-        // ===== CHART INITIALIZATION =====
-        function initWordFrequencyChart(topWords) {
-            var ctx = document.getElementById('wordFrequencyChart');
-            if (ctx && topWords && topWords.length > 0) { // Check if canvas element exists and data is not empty
-                var labels = [];
-                var data = [];
-                var backgroundColors = [];
+            topWords.forEach(function (item) {
+                labels.push(item[0]); // word
+                data.push(item[1]); // count
+                backgroundColors.push(getRandomColor());
+            });
 
-                topWords.forEach(function (item) {
-                    labels.push(item[0]); // word
-                    data.push(item[1]); // count
-                    backgroundColors.push(getRandomColor());
-                });
-
-                new Chart(ctx.getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Word Frequency',
-                            data: data,
-                            backgroundColor: backgroundColors,
-                            borderColor: '#495057',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Occurrences',
-                                    font: {
-                                        weight: 'bold'
-                                    }
-                                },
-                                grid: {
-                                    color: 'rgba(0,0,0,0.05)'
+            new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Word Frequency',
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderColor: '#495057',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Occurrences',
+                                font: {
+                                    weight: 'bold'
                                 }
                             },
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Words',
-                                    font: {
-                                        weight: 'bold'
-                                    }
-                                },
-                                grid: {
-                                    display: false
-                                }
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
                             }
                         },
-                        plugins: {
-                            legend: {
-                                display: false
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Words',
+                                font: {
+                                    weight: 'bold'
+                                }
                             },
-                            tooltip: {
-                                callbacks: {
-                                    label: function (context) {
-                                        return context.parsed.y + ' occurrence' + (context.parsed.y !== 1 ? 's' : '');
-                                    }
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return context.parsed.y + ' occurrence' + (context.parsed.y !== 1 ? 's' : '');
                                 }
                             }
                         }
@@ -526,6 +802,4 @@
             initWordFrequencyChart(chartTopWordsData); // Pass the JavaScript variable
         });
     </script>
-</body>
-
-</html>
+{% endblock %}

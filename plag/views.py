@@ -133,7 +133,7 @@ def view_specific_scan(request, scan_id):
     # Ensure 'user' field in ScanLog is used for security
     scan_log = get_object_or_404(ScanLog, id=scan_id, user=request.user)
     # Use result_log for the related name
-    scan_results = scan_log.scanresult_set.all().order_by('-perc_of_duplication') # Order by your existing field
+    scan_results = scan_log.scanresult_set.filter(perc_of_duplication__gt=0).order_by('-perc_of_duplication')
 
     # Pass the user's UserProfile object to the template
     student_profile = request.user.userprofile if hasattr(request.user, 'userprofile') else None
