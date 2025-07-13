@@ -35,17 +35,37 @@
     }
 
     /* Brand Colors */
-    .text-brand-orange { color: #ff7d0b; }
-    .bg-brand-orange { background-color: #ff7d0b; }
+    .text-brand-orange {
+      color: #ff7d0b;
+    }
 
-    .text-brand-peach { color: #ebbe87; }
-    .bg-brand-peach { background-color: #ebbe87; }
+    .bg-brand-orange {
+      background-color: #ff7d0b;
+    }
 
-    .text-brand-gray { color: #bebebe; }
-    .bg-brand-gray { background-color: #bebebe; }
+    .text-brand-peach {
+      color: #ebbe87;
+    }
 
-    .text-brand-cyan { color: #9cd7dd; }
-    .bg-brand-cyan { background-color: #9cd7dd; }
+    .bg-brand-peach {
+      background-color: #ebbe87;
+    }
+
+    .text-brand-gray {
+      color: #bebebe;
+    }
+
+    .bg-brand-gray {
+      background-color: #bebebe;
+    }
+
+    .text-brand-cyan {
+      color: #9cd7dd;
+    }
+
+    .bg-brand-cyan {
+      background-color: #9cd7dd;
+    }
 
     /* Header Styles */
     .header {
@@ -94,7 +114,8 @@
     }
 
     .nav {
-      display: none; /* Hidden by default for mobile, shown with media query */
+      display: none;
+      /* Hidden by default for mobile, shown with media query */
       gap: 24px;
     }
 
@@ -103,13 +124,16 @@
       text-decoration: none;
       transition: color 0.15s;
       font-weight: 500;
-      padding: 8px 12px; /* Added padding for better click area */
-      border-radius: 6px; /* Slightly rounded corners for nav items */
+      padding: 8px 12px;
+      /* Added padding for better click area */
+      border-radius: 6px;
+      /* Slightly rounded corners for nav items */
     }
 
     .nav a:hover {
       color: #ff7d0b;
-      background-color: rgba(255, 125, 11, 0.05); /* Subtle background on hover */
+      background-color: rgba(255, 125, 11, 0.05);
+      /* Subtle background on hover */
     }
 
     .user-section {
@@ -283,26 +307,28 @@
       </a>
 
       <nav class="nav">
-        {# Dashboard link - dynamically redirects based on user role #}
         {% if user.is_authenticated %}
-          {# Check if userprofile exists and if user is NOT a lecturer #}
-          {% if user.userprofile and not user.userprofile.is_lecturer %}
-            <a href="{% url 'student_dashboard' %}">Dashboard</a>
+          {% if user.userprofile %}
+            {% if user.userprofile.is_lecturer %}
+              <a href="{% url 'lecturer_dashboard' %}">Dashboard</a>
+            {% else %}
+              <a href="{% url 'student_dashboard' %}">Dashboard</a>
+            {% endif %}
           {% endif %}
-        {% else %} {# Not authenticated, redirect to login #}
+        {% else %}
           <a href="{% url 'login' %}">Dashboard</a>
         {% endif %}
       </nav>
 
       <div class="user-section">
         {% if user.is_authenticated %}
-          <span class="user-badge">{{ user.userprofile.full_name }}</span>
-          <form method="post" action="{% url 'logout' %}" style="display: inline;">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-secondary">Logout</button>
-          </form>
+        <span class="user-badge">{{ user.userprofile.full_name }}</span>
+        <form method="post" action="{% url 'logout' %}" style="display: inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-secondary">Logout</button>
+        </form>
         {% else %}
-          <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+        <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
         {% endif %}
       </div>
     </div>
@@ -310,11 +336,11 @@
 
   <!-- Messages -->
   {% if messages %}
-    <div class="messages">
-      {% for message in messages %}
-        <div class="message">{{ message }}</div>
-      {% endfor %}
-    </div>
+  <div class="messages">
+    {% for message in messages %}
+    <div class="message">{{ message }}</div>
+    {% endfor %}
+  </div>
   {% endif %}
 
   <!-- Main Content -->
