@@ -1,4 +1,4 @@
-from django.urls import path, re_path # <-- Replaced 'patterns' and 'url'
+from django.urls import path, re_path, include # <-- Replaced 'patterns' and 'url'
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
@@ -78,6 +78,7 @@ urlpatterns = [
     path('login/', views.custom_login, name='login'),
     path('register/', views.register, name='register'),
     path('logout/', views.custom_logout, name='logout'),
+    path('accounts/', include('plag.urls')),
 
     # Student URLs
     path('student-dashboard/', views.student_dashboard, name='student_dashboard'),
