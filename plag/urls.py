@@ -80,7 +80,7 @@ urlpatterns = [
     path('logout/', views.custom_logout, name='logout'),
 
     # Student URLs
-    path('student/dashboard/', student_dashboard_view, name='student_dashboard'),
+    path('student-dashboard/', views.student_dashboard, name='student_dashboard'),
     path('student/scan/<int:scan_id>/', view_specific_scan, name='view_specific_scan'),
     path('student/classroom/<int:classroom_id>/', student_classroom_detail, name='student_classroom_detail'),
     path('student/join/', views.join_classroom, name='join_classroom'),

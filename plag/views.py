@@ -107,27 +107,23 @@ def custom_logout(request):
 
 
 @login_required
-def student_dashboard(request):
-    classrooms = request.user.student_classrooms.all()
-    return render(request, 'plag/static/index.html', {'classrooms': classrooms})
-
-
-# --- New View: Student Dashboard (lists past scans) ---
-@login_required
-def student_dashboard_view(request):
+def student_dashboard(request): # Renamed from student_dashboard_view
     # Fetch all scan logs for the current user, ordered by most recent
-    # Ensure 'user' field is present in ScanLog for this to work
-    recent_scans = ScanLog.objects.filter(user=request.user).order_by('-timestamp')[:5] # Order by your existing 'timestamp' field
+    recent_scans = ScanLog.objects.filter(user=request.user).order_by('-timestamp')[:5]
+
+    # Also fetch classrooms (combining the logic from your original student_dashboard)
+    classrooms = request.user.student_classrooms.all()
 
     # Pass the user's UserProfile object to the template
     student_profile = request.user.userprofile if hasattr(request.user, 'userprofile') else None
 
     context = {
         'recent_scans': recent_scans,
+        'classrooms': classrooms, # Add classrooms to the context
         'student': student_profile,
         'user': request.user,
     }
-    return render(request, 'plag/static/index.html', context) # Render your existing index.html as the dashboard
+    return render(request, 'plag/static/index.html', context)
 
 
 # --- New View: View Specific Past Scan (re-displays index_trial.html with saved data) ---
@@ -448,28 +444,22 @@ class IndexTrialView(View):
         return render(request, self.template, context)
 
     def post(self, request, *args, **kwargs):
-        # Run plagiarism scan
         scan_log, scan_results, extracted_text = process_homepage_trial(request)
 
         ai_probability_score = None
-        ai_label_from_winston = None # New variable to store the label from WinstonAI
+        ai_label_from_winston = None
         burstiness_score = None
         top_words = []
         analysis_message = None
 
         if extracted_text.strip():
-            # AI detection
             from util.winston import get_winston_ai_prediction, calculate_burstiness, get_top_repeated_words
 
-            # 🛑 FIX: Unpack the tuple returned by get_winston_ai_prediction
             ai_probability_score, ai_label_from_winston = get_winston_ai_prediction(extracted_text)
-
             burstiness_score = calculate_burstiness(extracted_text)
             top_words = get_top_repeated_words(extracted_text)
 
             if ai_probability_score is not None:
-                # Ensure ai_probability_score is a float before comparison
-                # Add a check to ensure it's indeed a number
                 if isinstance(ai_probability_score, (int, float)):
                     if ai_probability_score > 0.5:
                         analysis_message = "Text Analysis Result: AI generated content (WinstonAI)"
@@ -477,33 +467,29 @@ class IndexTrialView(View):
                     else:
                         analysis_message = "Text Analysis Result: Likely human content (WinstonAI)"
                         scan_log.ai_label = "Human-written"
-                    scan_log.ai_score = ai_probability_score
+                    scan_log.ai_probability_score = ai_probability_score # FIX: This was ai_score, should match model field
                 else:
-                    # Handle unexpected type from WinstonAI if it's not None but also not a number
                     logger.error(f"WinstonAI returned non-numeric score: {ai_probability_score}")
                     analysis_message = "WinstonAI returned an unreadable score."
                     scan_log.ai_label = "Error"
-                    scan_log.ai_score = None # Reset to None if type is wrong
+                    scan_log.ai_probability_score = None
             else:
-                # This branch is taken if get_winston_ai_prediction returned (None, None)
                 analysis_message = "WinstonAI could not detect a valid result (API error or no response)."
                 scan_log.ai_label = "API Error"
-                scan_log.ai_score = None # Ensure score is None on error
+                scan_log.ai_probability_score = None
 
+            scan_log.burstiness_score = burstiness_score # Make sure to save these
+            scan_log.top_words = top_words
+            scan_log.text_snippet = extracted_text[:255] # Or whatever length you want to store
             scan_log.save() # Save changes to the scan_log object
 
-        context = {
-            'scan_log': scan_log,
-            'scan_results': scan_results,
-            'ai_probability_score': ai_probability_score * 100 if ai_probability_score is not None else None,
-            'burstiness_score': burstiness_score,
-            'top_words': top_words,
-            # Use ai_label_from_winston if it's the source for message, otherwise use scan_log.ai_label
-            'analysis_message': analysis_message or f"AI Detection: {scan_log.ai_label}" if scan_log and scan_log.ai_label else None,
-            'student': request.user.userprofile,
-        }
+            # 🎉 FIX: Redirect to the student dashboard after a successful scan
+            messages.success(request, 'Scan completed successfully!')
+            return redirect('student_dashboard') # Use the name of your dashboard URL
 
-        return render(request, self.template, context)
+        # If there's no extracted text, maybe show an error or redirect
+        messages.error(request, 'No text was provided for scanning.')
+        return redirect('student_dashboard')
 
 
 def username_unique(request):

@@ -570,60 +570,69 @@
       gap: 16px;
     }
   }
+
   /* Add some basic styling for recent scans section (you can integrate this into your existing CSS) */
-    .recent-scans-section {
-        background-color: rgba(255, 255, 255, 0.85);
-        border-radius: 16px;
-        padding: 20px;
-        margin-top: 32px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(235, 190, 135, 0.2);
-    }
-    .recent-scans-section h2 {
-        text-align: center;
-        color: #333;
-        margin-bottom: 20px;
-    }
-    .scans-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 20px;
-    }
-    .scan-item {
-        background-color: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 15px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        transition: transform 0.2s ease-in-out;
-    }
-    .scan-item:hover {
-        transform: translateY(-3px);
-    }
-    .scan-item h3 {
-        color: #ff7d0b;
-        margin-top: 0;
-        font-size: 1.2em;
-    }
-    .scan-item p {
-        font-size: 0.9em;
-        color: #555;
-        margin-bottom: 5px;
-    }
-    .btn-view-details {
-        display: inline-block;
-        margin-top: 10px;
-        padding: 8px 15px;
-        background-color: #ff7d0b;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        font-size: 0.9em;
-        transition: background-color 0.2s;
-    }
-    .btn-view-details:hover {
-        background-color: #ebbe87;
-    }
+  .recent-scans-section {
+    background-color: rgba(255, 255, 255, 0.85);
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 32px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(235, 190, 135, 0.2);
+  }
+
+  .recent-scans-section h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  .scans-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .scan-item {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease-in-out;
+  }
+
+  .scan-item:hover {
+    transform: translateY(-3px);
+  }
+
+  .scan-item h3 {
+    color: #ff7d0b;
+    margin-top: 0;
+    font-size: 1.2em;
+  }
+
+  .scan-item p {
+    font-size: 0.9em;
+    color: #555;
+    margin-bottom: 5px;
+  }
+
+  .btn-view-details {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 8px 15px;
+    background-color: #ff7d0b;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+  }
+
+  .btn-view-details:hover {
+    background-color: #ebbe87;
+  }
 </style>
 {% endblock %}
 
@@ -673,31 +682,34 @@
 
     <div class="card recent-scans-card">
       <div class="card-header">
-        <h3>Recent Checks</h3>
+        <h2>Your Recent Scan Activity</h2>
       </div>
-      <div class="card-body">
-        {% if recent_scans %}
-        <ul class="list-group list-group-flush">
+      {% if recent_scans %}
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Document Name</th>
+            <th>Plagiarism Score</th>
+            <th>AI Label</th>
+            <th>Scan Date</th>
+            <th>View Details</th>
+          </tr>
+        </thead>
+        <tbody>
           {% for scan in recent_scans %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
-              <a href="{% url 'view_specific_scan' scan.id %}">
-                Scan on {{ scan.timestamp|date:"F d, Y, P" }}
-              </a>
-              <br>
-              <small>
-                Overall Plagiarism: <strong>{{ scan.overall_plagiarism_percentage|default:"N/A" }}%</strong>
-                {% if scan.ai_label %}- AI Detection: {{ scan.ai_label }}{% endif %}
-              </small>
-            </div>
-            <span class="badge bg-primary rounded-pill">View Report</span>
-          </li>
+          <tr>
+            <td>{{ scan.document_name|default:"N/A" }}</td>
+            <td>{{ scan.overall_plagiarism_percentage|default:"N/A" }}%</td>
+            <td>{{ scan.ai_label|default:"Pending" }}</td>
+            <td>{{ scan.timestamp|date:"M d, Y H:i" }}</td> {# Use 'timestamp' or 'created_at' as per your model #}
+            <td><a href="{% url 'view_specific_scan' scan.id %}" class="btn btn-info btn-sm">View</a></td>
+          </tr>
           {% endfor %}
-        </ul>
-        {% else %}
-        <p class="text-muted">No recent scans found. Conduct a new plagiarism check to see your reports here!</p>
-        {% endif %}
-      </div>
+        </tbody>
+      </table>
+      {% else %}
+      <p>No recent scan activity found. Start a new scan!</p>
+      {% endif %}
     </div>
 
 
