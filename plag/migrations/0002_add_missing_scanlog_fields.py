@@ -16,24 +16,21 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # Use RunPython.noop for fields that now exist in the DB.
+        # Use RunPython.noop for all fields that now exist in the DB.
         migrations.RunPython(RunPython.noop, RunPython.noop), # For ai_probability_score
         migrations.RunPython(RunPython.noop, RunPython.noop), # For burstiness_score
         migrations.RunPython(RunPython.noop, RunPython.noop), # For top_words
         migrations.RunPython(RunPython.noop, RunPython.noop), # For text_snippet
         migrations.RunPython(RunPython.noop, RunPython.noop), # For document_name
-        migrations.RunPython(RunPython.noop, RunPython.noop), # For uploaded_file <-- NEW ADDITION
+        migrations.RunPython(RunPython.noop, RunPython.noop), # For uploaded_file
+        migrations.RunPython(RunPython.noop, RunPython.noop), # For user (which is user_id) <-- NEW ADDITION
 
-        # Add only the fields that are STILL missing
+        # Add only the fields that are STILL missing.
+        # Based on your previous errors, 'ai_label' should be the only remaining AddField.
         migrations.AddField(
             model_name='scanlog',
             name='ai_label',
             field=models.CharField(blank=True, max_length=50, null=True),
-        ),
-        migrations.AddField(
-            model_name='scanlog',
-            name='user',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL),
         ),
         # If 'fail_type' was also missing from your DB but present in your model:
         # migrations.AddField(
