@@ -456,6 +456,14 @@ class IndexTrialView(View):
         top_words = []
         analysis_message = None
 
+        document_name = request.POST.get('document_name', '').strip()
+        if not document_name and request.FILES.get('plagFile'):
+            document_name = request.FILES.get('plagFile').name
+        elif not document_name and extracted_text.strip():
+            document_name = "Manual Text Input" # Fallback for pure text input
+        else:
+            document_name = "Untitled Document"
+
         if extracted_text.strip():
             # AI detection
             from util.winston import get_winston_ai_prediction, calculate_burstiness, get_top_repeated_words
@@ -492,10 +500,13 @@ class IndexTrialView(View):
             if request.user.is_authenticated:
                 scan_log.user = request.user
             else:
-                # Handle cases where user might not be logged in (e.g., if index_trial is public)
-                # Perhaps assign to a default user, or don't save the log, or redirect to login.
-                # For a student dashboard, they *should* be logged in.
                 pass # Or logger.warning("Scan attempted by unauthenticated user.")
+
+            scan_log.document_name = document_name
+            scan_log.burstiness_score = burstiness_score
+            scan_log.top_words = top_words
+            scan_log.text_snippet = extracted_text[:255] 
+
             scan_log.save() # Save changes to the scan_log object
 
         context = {
@@ -504,9 +515,10 @@ class IndexTrialView(View):
             'ai_probability_score': ai_probability_score * 100 if ai_probability_score is not None else None,
             'burstiness_score': burstiness_score,
             'top_words': top_words,
+            'text_snippet': scan_log.text_snippet,
             # Use ai_label_from_winston if it's the source for message, otherwise use scan_log.ai_label
             'analysis_message': analysis_message or f"AI Detection: {scan_log.ai_label}" if scan_log and scan_log.ai_label else None,
-            'student': request.user.userprofile,
+            'student': request.user.userprofile if hasattr(request.user, 'userprofile') else None,
         }
 
         return render(request, self.template, context)
