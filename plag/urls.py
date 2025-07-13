@@ -29,7 +29,8 @@ urlpatterns = [
 
     # Static Pages using TemplateView
     path('products/', TemplateView.as_view(template_name='plag/static/products.html'), name='products'),
-    path('features-screenshots/', TemplateView.as_as_view(template_name='plag/static/features_and_screenshots.html'), name='features'),
+    # ⭐ FIX: Changed as_as_view to as_view ⭐
+    path('features-screenshots/', TemplateView.as_view(template_name='plag/static/features_and_screenshots.html'), name='features'),
     path('url-protection/', TemplateView.as_view(template_name='plag/static/url_protection.html'), name='url_prot'),
     path('document-protection/', TemplateView.as_view(template_name='plag/static/doc_protection.html'), name='doc_prot'),
     path('pricing/', TemplateView.as_view(template_name='plag/static/pricing.html'), name='pricing'),
@@ -46,7 +47,7 @@ urlpatterns = [
     # Account URLs
     path('account/profile/', login_required(views.ProfileView.as_view()), name='profile'),
 
-    # ⭐ ADDING delete_account here ⭐
+    # Adding delete_account here
     # Assuming 'accounts/' is prefixed in your main project urls.py
     path('delete/', views.DeleteAccountView.as_view(), name='delete_account'),
 
@@ -83,7 +84,6 @@ urlpatterns = [
     path('login/', views.custom_login, name='login'),
     path('register/', views.register, name='register'),
     path('logout/', views.custom_logout, name='logout'),
-    # ⭐ REMOVED: path('accounts/', include('plag.urls')), - THIS LINE WAS RECURSIVE AND INCORRECT ⭐
 
     # Student URLs
     path('student-dashboard/', views.student_dashboard, name='student_dashboard'),
