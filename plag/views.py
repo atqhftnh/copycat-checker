@@ -393,6 +393,9 @@ class IndexTrialView(View):
     template = 'plag/static/index_trial.html'
 
     def get(self, request, *args, **kwargs):
+        # This GET method is primarily for rendering the initial upload form.
+        # The AJAX calls from index_trial.html's JS will hit this GET method
+        # with id1/id2 parameters to fetch individual scan results.
         scan_log_id = request.GET.get('id1')
         scan_result_id = request.GET.get('id2')
 
@@ -406,7 +409,7 @@ class IndexTrialView(View):
 
         if scan_log_id:
             try:
-                # Process the result
+                # Process the result (this is for AJAX calls from the report page)
                 scan_result = post_process_index_trial(request, scan_log_id, scan_result_id)
                 if scan_result:
                     perc_dup = scan_result.perc_of_duplication
@@ -431,52 +434,52 @@ class IndexTrialView(View):
                 'id': scan_result_id,
                 'perc_dup': str(perc_dup),
                 'overall_plagiarism_percentage': overall_plagiarism_percentage,
-                'ai_score': ai_score,
+                'ai_score': ai_score, # This is the score, not percentage
                 'ai_label': ai_label,
             }), content_type="application/json")
 
-        # Otherwise render the page (useful for manual GET testing)
+        # Otherwise render the initial upload page (useful for manual GET testing or initial load)
         context = {
-            'scan_log': scan_log,
-            'scan_results': [scan_result] if scan_result else [],
+            'scan_log': scan_log, # This will typically be None for initial load
+            'scan_results': [scan_result] if scan_result else [], # Empty for initial load
             'overall_plagiarism_percentage': overall_plagiarism_percentage,
             'ai_probability_score': ai_score * 100 if ai_score is not None else None,
             'analysis_message': f"AI Detection: {ai_label}" if ai_label else None,
-            'student': request.user.userprofile,
+            'student': request.user.userprofile if hasattr(request.user, 'userprofile') else None,
         }
         return render(request, self.template, context)
 
+
     def post(self, request, *args, **kwargs):
-        # Run plagiarism scan
+        # 1. Run plagiarism scan to get initial ScanLog object
         scan_log, scan_results, extracted_text = process_homepage_trial(request)
 
+        # 2. Determine the document name (ALWAYS executed)
+        user_provided_document_name = request.POST.get('document_name', '').strip()
+        if user_provided_document_name:
+            scan_log.document_name = user_provided_document_name
+        elif request.FILES.get('plagFile'):
+            scan_log.document_name = request.FILES.get('plagFile').name
+        elif extracted_text.strip(): # This is a fallback for pure text input, not for files.
+            scan_log.document_name = "Manual Text Input"
+        else:
+            scan_log.document_name = "Untitled Document" # Final fallback
+
+        # 3. Perform AI detection and assign AI-related fields (conditional on extracted_text)
+        # Initialize variables
         ai_probability_score = None
-        ai_label_from_winston = None # New variable to store the label from WinstonAI
+        ai_label_from_winston = None
         burstiness_score = None
         top_words = []
         analysis_message = None
 
-        document_name = request.POST.get('document_name', '').strip()
-        if not document_name and request.FILES.get('plagFile'):
-            document_name = request.FILES.get('plagFile').name
-        elif not document_name and extracted_text.strip():
-            document_name = "Manual Text Input" # Fallback for pure text input
-        else:
-            document_name = "Untitled Document"
-
         if extracted_text.strip():
-            # AI detection
-            from util.winston import get_winston_ai_prediction, calculate_burstiness, get_top_repeated_words
-
-            # 🛑 FIX: Unpack the tuple returned by get_winston_ai_prediction
+            # AI detection and content analysis only if text is present
             ai_probability_score, ai_label_from_winston = get_winston_ai_prediction(extracted_text)
-
             burstiness_score = calculate_burstiness(extracted_text)
             top_words = get_top_repeated_words(extracted_text)
 
             if ai_probability_score is not None:
-                # Ensure ai_probability_score is a float before comparison
-                # Add a check to ensure it's indeed a number
                 if isinstance(ai_probability_score, (int, float)):
                     if ai_probability_score > 0.5:
                         analysis_message = "Text Analysis Result: AI generated content (WinstonAI)"
@@ -484,40 +487,54 @@ class IndexTrialView(View):
                     else:
                         analysis_message = "Text Analysis Result: Likely human content (WinstonAI)"
                         scan_log.ai_label = "Human-written"
-                    scan_log.ai_score = ai_probability_score
+                    scan_log.ai_probability_score = ai_probability_score # Corrected field name
                 else:
-                    # Handle unexpected type from WinstonAI if it's not None but also not a number
                     logger.error(f"WinstonAI returned non-numeric score: {ai_probability_score}")
                     analysis_message = "WinstonAI returned an unreadable score."
                     scan_log.ai_label = "Error"
-                    scan_log.ai_score = None # Reset to None if type is wrong
+                    scan_log.ai_probability_score = None
             else:
-                # This branch is taken if get_winston_ai_prediction returned (None, None)
                 analysis_message = "WinstonAI could not detect a valid result (API error or no response)."
                 scan_log.ai_label = "API Error"
-                scan_log.ai_score = None # Ensure score is None on error
+                scan_log.ai_probability_score = None
 
-            if request.user.is_authenticated:
-                scan_log.user = request.user
-            else:
-                pass # Or logger.warning("Scan attempted by unauthenticated user.")
-
-            scan_log.document_name = document_name
+            # Assign other fields to scan_log only if text was extracted for analysis
             scan_log.burstiness_score = burstiness_score
             scan_log.top_words = top_words
-            scan_log.text_snippet = extracted_text[:255] 
+            scan_log.text_snippet = extracted_text[:500] # Limit snippet length for display, adjust as needed
+        else:
+            # If no text extracted, ensure AI/burstiness/top_words fields are explicitly None/empty
+            scan_log.ai_probability_score = None
+            scan_log.ai_label = "No text for AI analysis"
+            scan_log.burstiness_score = None
+            scan_log.top_words = []
+            scan_log.text_snippet = ""
+            analysis_message = "No text extracted for analysis."
 
-            scan_log.save() # Save changes to the scan_log object
+
+        # 4. Assign user to ScanLog (ALWAYS executed)
+        if request.user.is_authenticated:
+            scan_log.user = request.user
+        else:
+            logger.warning("Scan attempted by unauthenticated user, scan log will not be associated with a user.")
+            # Consider redirecting to login or handling anonymous scans differently if needed.
+
+        # ⭐ FINAL SAVE: This MUST be outside the 'if extracted_text.strip():' block. ⭐
+        # It ensures all attributes, including document_name and user, are saved.
+        scan_log.save()
+
+
+        messages.success(request, 'Scan completed successfully!')
 
         context = {
             'scan_log': scan_log,
-            'scan_results': scan_results,
-            'ai_probability_score': ai_probability_score * 100 if ai_probability_score is not None else None,
-            'burstiness_score': burstiness_score,
-            'top_words': top_words,
+            'scan_results': scan_results, # These are the plagiarism results from process_homepage_trial
+            'overall_plagiarism_percentage': scan_log.overall_plagiarism_percentage,
+            'ai_probability_score': scan_log.ai_probability_score * 100 if scan_log.ai_probability_score is not None else None,
+            'burstiness_score': scan_log.burstiness_score,
+            'top_words': scan_log.top_words,
             'text_snippet': scan_log.text_snippet,
-            # Use ai_label_from_winston if it's the source for message, otherwise use scan_log.ai_label
-            'analysis_message': analysis_message or f"AI Detection: {scan_log.ai_label}" if scan_log and scan_log.ai_label else None,
+            'analysis_message': analysis_message or (f"AI Detection: {scan_log.ai_label}" if scan_log and scan_log.ai_label else None),
             'student': request.user.userprofile if hasattr(request.user, 'userprofile') else None,
         }
 
