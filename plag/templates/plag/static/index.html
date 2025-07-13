@@ -680,19 +680,17 @@
       </div>
     </div> <!-- ✅ END WRAPPER -->
 
-    <div class="card recent-scans-card">
-      <div class="card-header">
-        <h2>Your Recent Scan Activity</h2>
-      </div>
+    <div class="container mt-4">
+      <h2>Your Recent Scan Activity</h2>
       {% if recent_scans %}
-      <table class="table table-striped">
-        <thead>
+      <table class="table table-striped table-bordered">
+        <thead class="thead-dark">
           <tr>
             <th>Document Name</th>
             <th>Plagiarism Score</th>
             <th>AI Label</th>
             <th>Scan Date</th>
-            <th>View Details</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -701,14 +699,16 @@
             <td>{{ scan.document_name|default:"N/A" }}</td>
             <td>{{ scan.overall_plagiarism_percentage|default:"N/A" }}%</td>
             <td>{{ scan.ai_label|default:"Pending" }}</td>
-            <td>{{ scan.timestamp|date:"M d, Y H:i" }}</td> {# Use 'timestamp' or 'created_at' as per your model #}
-            <td><a href="{% url 'view_specific_scan' scan.id %}" class="btn btn-info btn-sm">View</a></td>
+            <td>{{ scan.timestamp|date:"M d, Y H:i" }}</td>
+            <td>
+              **<a href="{% url 'view_specific_scan' scan.id %}" class="btn btn-info btn-sm">View Scan Details</a>
+            </td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
       {% else %}
-      <p>No recent scan activity found. Start a new scan!</p>
+        <p class="alert alert-info">No recent scan activity found. Upload a new document to begin!</p>
       {% endif %}
     </div>
 

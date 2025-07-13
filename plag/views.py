@@ -141,13 +141,16 @@ def view_specific_scan(request, scan_id):
     context = {
         'scan_log': scan_log,
         'scan_results': scan_results,
-        'ai_probability_score': scan_log.ai_probability_score,
+        'overall_plagiarism_percentage': scan_log.overall_plagiarism_percentage,
+        'ai_probability_score': scan_log.ai_probability_score * 100 if scan_log.ai_probability_score is not None else None,
         'burstiness_score': scan_log.burstiness_score,
         'top_words': scan_log.top_words,
         'text_snippet': scan_log.text_snippet,
+        'analysis_message': f"AI Detection: {scan_log.ai_label}" if scan_log.ai_label else "AI analysis not available.",
         'student': student_profile,
+        'user': request.user,
     }
-    return render(request, 'plag/index_trial.html', context) # Render index_trial.html with pre-loaded data
+    return render(request, 'plag/scan_detail.html', context)
 
 
 
@@ -485,6 +488,7 @@ class IndexTrialView(View):
                 analysis_message = "WinstonAI could not detect a valid result (API error or no response)."
                 scan_log.ai_label = "API Error"
                 scan_log.ai_score = None # Ensure score is None on error
+
 
             scan_log.save() # Save changes to the scan_log object
 

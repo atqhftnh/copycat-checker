@@ -1,0 +1,100 @@
+{% load static %} {# If you use static files like CSS/JS #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan Report - {{ scan_log.document_name|default:"Unnamed Document" }}</title>
+    {# Link your CSS frameworks, e.g., Bootstrap #}
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    {# Add your custom CSS here if any #}
+    <link rel="stylesheet" href="{% static 'css/your_custom_styles.css' %}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="{% url 'student_dashboard' %}">PlagiarismGuard</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'student_dashboard' %}">Dashboard</a>
+                </li>
+                {# Add other navigation links if needed #}
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2 class="mb-4">Scan Report for: **{{ scan_log.document_name|default:"Unnamed Document" }}**</h2>
+        <p class="text-muted">Scanned on: **{{ scan_log.timestamp|date:"F d, Y H:i" }}**</p>
+
+        <hr>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Plagiarism Analysis</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead">Overall Plagiarism Percentage: **{{ scan_log.overall_plagiarism_percentage|default:"N/A" }}%**</p>
+                        {% if scan_results %}
+                            <h5 class="mt-4">Matching Sources:</h5>
+                            <ul class="list-group list-group-flush">
+                                {% for result in scan_results %}
+                                    <li class="list-group-item">
+                                        <p class="mb-1">Match: **{{ result.perc_of_duplication|default:"N/A" }}%** from
+                                            {% if result.match_url %}
+                                                <a href="{{ result.match_url }}" target="_blank">{{ result.match_display_url|default:"Unknown Source" }}</a>
+                                            {% else %}
+                                                {{ result.match_display_url|default:"Unknown Source" }}
+                                            {% endif %}
+                                        </p>
+                                        {% if result.match_title %}<p class="text-muted small mb-0">**{{ result.match_title }}**</p>{% endif %}
+                                        {% if result.match_desc %}<p class="text-muted small mb-0">{{ result.match_desc }}</p>{% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="alert alert-info">No plagiarism matches found or analysis pending.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0">AI Detection Analysis</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead">**{{ analysis_message|default:"No AI analysis performed." }}**</p>
+                        {% if ai_probability_score is not None %}
+                            <p>AI Probability Score: **{{ ai_probability_score|floatformat:2 }}%**</p>
+                        {% endif %}
+                        {% if burstiness_score is not None %}
+                            <p>Burstiness Score: **{{ burstiness_score|floatformat:2 }}**</p>
+                        {% endif %}
+                        {% if top_words %}
+                            <p>Top Words: **{{ top_words|join:", " }}**</p>
+                        {% endif %}
+                        {% if text_snippet %}
+                            <h5 class="mt-4">Text Snippet:</h5>
+                            <blockquote class="blockquote bg-light p-3 rounded border-left border-dark">
+                                <p class="mb-0">{{ text_snippet }}</p>
+                            </blockquote>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+        <a href="{% url 'student_dashboard' %}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+
+    </div>
+
+    {# Link your JavaScript files here #}
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

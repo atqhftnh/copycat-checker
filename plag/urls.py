@@ -87,6 +87,7 @@ urlpatterns = [
     #path('join_classroom/', join_classroom, name='join_classroom'),
     path('leave-classroom/<int:classroom_id>/', views.leave_classroom, name='leave_classroom'),
     path('upload-report/', upload_report, name='upload_report'),
+    path('scan/<int:scan_id>/', view_specific_scan, name='view_specific_scan'),
 
     # Lecturer URLs
     path('lecturer/dashboard/', views.lecturer_dashboard, name='lecturer_dashboard'),
