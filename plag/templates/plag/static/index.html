@@ -681,35 +681,37 @@
     </div> <!-- ✅ END WRAPPER -->
 
     <div class="container mt-4">
-      <h2>Your Recent Scan Activity</h2>
-      {% if recent_scans %}
-      <table class="table table-striped table-bordered">
-        <thead class="thead-dark">
-          <tr>
-            <th>Document Name</th>
-            <th>Plagiarism Score</th>
-            <th>AI Label</th>
-            <th>Scan Date</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for scan in recent_scans %}
-          <tr>
-            <td>{{ scan.document_name|default:"N/A" }}</td>
-            <td>{{ scan.overall_plagiarism_percentage|default:"N/A" }}%</td>
-            <td>{{ scan.ai_label|default:"Pending" }}</td>
-            <td>{{ scan.timestamp|date:"M d, Y H:i" }}</td>
-            <td>
-              **<a href="{% url 'view_specific_scan' scan.id %}" class="btn btn-info btn-sm">View Scan Details</a>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% else %}
+      <div class="recent-scans-section"> {# ⭐ ADD THIS WRAPPER ⭐ #}
+        <h2>Your Recent Scan Activity</h2>
+        {% if recent_scans %}
+        <table class="table table-striped table-bordered">
+          <thead class="thead-dark">
+            <tr>
+              <th>Document Name</th>
+              <th>Plagiarism Score</th>
+              <th>AI Label</th>
+              <th>Scan Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for scan in recent_scans %}
+            <tr>
+              <td>{{ scan.document_name|default:"N/A" }}</td>
+              <td>{{ scan.overall_plagiarism_percentage|default:"N/A" }}%</td>
+              <td>{{ scan.ai_label|default:"Pending" }}</td>
+              <td>{{ scan.timestamp|date:"M d, Y H:i" }}</td>
+              <td>
+                <a href="{% url 'view_specific_scan' scan.id %}" class="btn btn-info btn-sm">View Scan Details</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
         <p class="alert alert-info">No recent scan activity found. Upload a new document to begin!</p>
-      {% endif %}
+        {% endif %}
+      </div> {# ⭐ CLOSE THE WRAPPER ⭐ #}
     </div>
 
 
