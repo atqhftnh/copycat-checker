@@ -17,6 +17,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import View, TemplateView
 from django.views.decorators.csrf import csrf_protect
 from django.utils.timezone import utc
@@ -534,6 +535,24 @@ def username_unique(request):
             return_data = True
 
     return HttpResponse(json.dumps(return_data), content_type="application/json")
+
+
+def post(self, request, *args, **kwargs):
+        user = request.user
+        try:
+            # IMPORTANT: Add a more robust confirmation here in a real application
+            # e.g., asking for password re-entry, or a custom confirmation modal.
+            # For now, the client-side `confirm()` is used.
+
+            user.delete() # This deletes the User object and cascades to related objects (like UserProfile)
+            logout(request) # Log the user out after deletion
+            messages.success(request, "Your account has been successfully deleted.")
+            return redirect('login')
+         # Redirect to the login page
+        except Exception as e:
+            messages.error(request, f"An error occurred while deleting your account: {e}")
+            logger.error(f"Error deleting account for user {user.username}: {e}")
+            return redirect('homepage')
 
 
 def data_cleanse(request):
