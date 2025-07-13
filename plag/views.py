@@ -150,7 +150,7 @@ def view_specific_scan(request, scan_id):
         'student': student_profile,
         'user': request.user,
     }
-    return render(request, 'plag/scan_detail.html', context)
+    return render(request, 'plag/static/scan_detail.html', context)
 
 
 
