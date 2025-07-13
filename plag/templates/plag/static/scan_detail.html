@@ -1,6 +1,7 @@
 {% load static %} {# If you use static files like CSS/JS #}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +10,290 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     {# Add your custom CSS here if any #}
     <link rel="stylesheet" href="{% static 'css/your_custom_styles.css' %}">
+    <style type="text/css">
+        /* Add styles for the buttons container */
+        .report-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            /* Space between buttons */
+            margin: 30px 0;
+        }
+
+        .print-button,
+        .back-to-dashboard-button {
+            background: #20c997;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-decoration: none;
+            /* For the anchor tag */
+        }
+
+        .print-button:hover {
+            background: #1aa179;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .print-button:disabled {
+            background-color: #cccccc;
+            /* Grey out when disabled */
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .back-to-dashboard-button {
+            background: #6c757d;
+            /* A different color for distinction */
+        }
+
+        .back-to-dashboard-button:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Print styles from index_trial.html to ensure consistent printing */
+        @media print {
+            @page {
+                size: A4;
+                margin: 1.5cm 2cm;
+
+                @top-left {
+                    content: "CopyCat Checker Report";
+                    font-size: 10pt;
+                    color: #6c757d;
+                    font-family: "Helvetica Neue", Arial, sans-serif;
+                }
+
+                @bottom-right {
+                    content: "Page " counter(page) " of " counter(pages);
+                    font-size: 10pt;
+                    color: #6c757d;
+                    font-family: "Helvetica Neue", Arial, sans-serif;
+                }
+            }
+
+            body {
+                font-family: "Georgia", "Times New Roman", serif;
+                font-size: 11pt;
+                line-height: 1.5;
+                color: #212529;
+                background: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .print-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 1.5cm;
+                padding-bottom: 1cm;
+                border-bottom: 2px solid #343a40;
+            }
+
+            .print-header img {
+                height: 1.5cm;
+                margin-bottom: 0.5cm;
+                opacity: 0.9;
+            }
+
+            .print-header h1 {
+                font-size: 22pt;
+                margin: 0 0 0.25cm 0;
+                color: #212529;
+                font-weight: 600;
+            }
+
+            .print-header .subtitle {
+                font-size: 13pt;
+                margin: 0;
+                color: #6c757d;
+                font-style: italic;
+            }
+
+            .print-header .meta {
+                font-size: 10pt;
+                margin: 0.5cm 0 0;
+                color: #6c757d;
+            }
+
+            .print-footer {
+                display: block !important;
+                text-align: center;
+                margin-top: 1cm;
+                padding-top: 0.5cm;
+                border-top: 1px solid #343a40;
+                font-size: 9pt;
+                color: #6c757d;
+            }
+
+            .no-print,
+            .sidebar,
+            nav,
+            .nav,
+            .navbar {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                overflow: hidden !important;
+            }
+
+            footer {
+                display: none !important;
+            }
+
+            .container {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+            }
+
+            .results-summary,
+            .summary-card,
+            pre,
+            .chart-container {
+                page-break-inside: avoid;
+            }
+
+            h2 {
+                font-size: 15pt;
+                page-break-after: avoid;
+                border-bottom: 1px solid #dee2e6;
+                padding-bottom: 0.2cm;
+                color: #343a40;
+            }
+
+            /* Force Detailed Source Matches to start on new page */
+            h2:nth-of-type(1),
+            /* Lexical Analysis */
+            h2:nth-of-type(2) {
+                /* Detailed Source Matches */
+                page-break-before: always;
+                margin-top: 0;
+                padding-top: 0.5cm;
+            }
+
+            /* Remove extra space when these are first on page */
+            h2:nth-of-type(1):first-child,
+            h2:nth-of-type(2):first-child {
+                padding-top: 0;
+            }
+
+            /* Adjust spacing after these headings */
+            h2:nth-of-type(1)+.word-frequency,
+            h2:nth-of-type(2)+.table-responsive {
+                margin-top: 0.5cm;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 0.5cm 0 0.75cm;
+                font-size: 10pt;
+                page-break-inside: auto;
+            }
+
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+
+            tfoot {
+                display: table-footer-group;
+            }
+
+            table th {
+                background-color: #f8f9fa !important;
+                color: #212529 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                font-weight: 600;
+            }
+
+            table th,
+            table td {
+                border: 1px solid #dee2e6;
+                padding: 0.3cm 0.5cm;
+                text-align: left;
+            }
+
+            pre {
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                background: none;
+                border: 1px solid #dee2e6;
+                font-family: "Courier New", monospace;
+                font-size: 9.5pt;
+                line-height: 1.4;
+                margin: 0.5cm 0;
+            }
+
+            .summary-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.25cm;
+                margin-bottom: 1.25cm;
+            }
+
+            .summary-card {
+                border: 1px solid #dee2e6;
+                padding: 0.75cm;
+                background: #fff !important;
+                page-break-inside: avoid;
+            }
+
+            .chart-container {
+                height: 7cm;
+                margin: 0.75cm 0;
+            }
+
+            #overallPlagiarismDisplay {
+                font-size: 26pt;
+                margin: 0.4cm 0;
+                display: block;
+            }
+
+            .success {
+                color: #28a745 !important;
+            }
+
+            .error {
+                color: #dc3545 !important;
+            }
+
+            .warning {
+                color: #ffc107 !important;
+            }
+
+            a {
+                color: #007bff;
+                text-decoration: none;
+            }
+
+            .break {
+                word-break: break-word;
+                hyphens: auto;
+            }
+        }
+    </style>
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand" href="{% url 'student_dashboard' %}">PlagiarismGuard</a>
@@ -36,26 +320,30 @@
                         <h4 class="mb-0">Plagiarism Analysis</h4>
                     </div>
                     <div class="card-body">
-                        <p class="lead">Overall Plagiarism Percentage: **{{ scan_log.overall_plagiarism_percentage|default:"N/A" }}%**</p>
+                        <p class="lead">Overall Plagiarism Percentage: **{{
+                            scan_log.overall_plagiarism_percentage|default:"N/A" }}%**</p>
                         {% if scan_results %}
-                            <h5 class="mt-4">Matching Sources:</h5>
-                            <ul class="list-group list-group-flush">
-                                {% for result in scan_results %}
-                                    <li class="list-group-item">
-                                        <p class="mb-1">Match: **{{ result.perc_of_duplication|default:"N/A" }}%** from
-                                            {% if result.match_url %}
-                                                <a href="{{ result.match_url }}" target="_blank">{{ result.match_display_url|default:"Unknown Source" }}</a>
-                                            {% else %}
-                                                {{ result.match_display_url|default:"Unknown Source" }}
-                                            {% endif %}
-                                        </p>
-                                        {% if result.match_title %}<p class="text-muted small mb-0">**{{ result.match_title }}**</p>{% endif %}
-                                        {% if result.match_desc %}<p class="text-muted small mb-0">{{ result.match_desc }}</p>{% endif %}
-                                    </li>
-                                {% endfor %}
-                            </ul>
+                        <h5 class="mt-4">Matching Sources:</h5>
+                        <ul class="list-group list-group-flush">
+                            {% for result in scan_results %}
+                            <li class="list-group-item">
+                                <p class="mb-1">Match: **{{ result.perc_of_duplication|default:"N/A" }}%** from
+                                    {% if result.match_url %}
+                                    <a href="{{ result.match_url }}" target="_blank">{{
+                                        result.match_display_url|default:"Unknown Source" }}</a>
+                                    {% else %}
+                                    {{ result.match_display_url|default:"Unknown Source" }}
+                                    {% endif %}
+                                </p>
+                                {% if result.match_title %}<p class="text-muted small mb-0">**{{ result.match_title }}**
+                                </p>{% endif %}
+                                {% if result.match_desc %}<p class="text-muted small mb-0">{{ result.match_desc }}</p>{%
+                                endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
                         {% else %}
-                            <p class="alert alert-info">No plagiarism matches found or analysis pending.</p>
+                        <p class="alert alert-info">No plagiarism matches found or analysis pending.</p>
                         {% endif %}
                     </div>
                 </div>
@@ -68,19 +356,19 @@
                     <div class="card-body">
                         <p class="lead">**{{ analysis_message|default:"No AI analysis performed." }}**</p>
                         {% if ai_probability_score is not None %}
-                            <p>AI Probability Score: **{{ ai_probability_score|floatformat:2 }}%**</p>
+                        <p>AI Probability Score: **{{ ai_probability_score|floatformat:2 }}%**</p>
                         {% endif %}
                         {% if burstiness_score is not None %}
-                            <p>Burstiness Score: **{{ burstiness_score|floatformat:2 }}**</p>
+                        <p>Burstiness Score: **{{ burstiness_score|floatformat:2 }}**</p>
                         {% endif %}
                         {% if top_words %}
-                            <p>Top Words: **{{ top_words|join:", " }}**</p>
+                        <p>Top Words: **{{ top_words|join:", " }}**</p>
                         {% endif %}
                         {% if text_snippet %}
-                            <h5 class="mt-4">Text Snippet:</h5>
-                            <blockquote class="blockquote bg-light p-3 rounded border-left border-dark">
-                                <p class="mb-0">{{ text_snippet }}</p>
-                            </blockquote>
+                        <h5 class="mt-4">Text Snippet:</h5>
+                        <blockquote class="blockquote bg-light p-3 rounded border-left border-dark">
+                            <p class="mb-0">{{ text_snippet }}</p>
+                        </blockquote>
                         {% endif %}
                     </div>
                 </div>
@@ -88,13 +376,150 @@
         </div>
 
         <hr>
-        <a href="{% url 'student_dashboard' %}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+        {# Removed the single "Back to Dashboard" button here, replaced by the action buttons below #}
 
+    </div>
+
+    <!-- Print Header -->
+    <div class="print-header" style="display: none;">
+        <img src="{% static 'plag/icon/logo.png' %}" alt="Copycat Checker">
+        <h1>Plagiarism & AI Content Analysis Report</h1>
+        <p class="subtitle">Comprehensive Document Authenticity Assessment</p>
+        <p class="meta">
+            Report generated: {{ scan_log.created_at|date:"F j, Y \a\t H:i" }}<br>
+            Document ID: PG-{{ scan_log.id|stringformat:"06d" }}<br><br>
+            Student Name: {{ student.full_name }}<br>
+            Student ID: {{ student.student_id|default:"-" }}
+        </p>
+    </div>
+
+    <!-- Print Footer -->
+    <div class="print-footer" style="display: none;">
+        <p>This report is confidential and intended solely for the use of the individual or entity to whom it is
+            addressed.
+        </p>
+        <p>Generated by CopyCat Checker • &copy; {% now "Y" %} All Rights Reserved</p>
+    </div>
+
+    <!-- Action Buttons: Print and Back to Dashboard -->
+    <div class="report-actions no-print">
+        <button class="print-button" id="printButton" onclick="preparePrint()" disabled>
+            <i class="fas fa-print"></i> Print Report
+        </button>
+        <a href="{% url 'student_dashboard' %}" class="back-to-dashboard-button">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
     </div>
 
     {# Link your JavaScript files here #}
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        // ===== PRINT FUNCTION =====
+        function preparePrint() {
+            // Show print-specific elements
+            $('.print-header, .print-footer').show();
+
+            // Add a small delay to ensure elements are visible before printing
+            setTimeout(function () {
+                window.print();
+
+                // Hide print elements again after printing
+                setTimeout(function () {
+                    $('.print-header, .print-footer').hide();
+                }, 500);
+            }, 200);
+        }
+
+        // ===== DOCUMENT READY =====
+        $(document).ready(function () {
+            // Enable the print button once the DOM is fully loaded for past scans
+            $('#printButton').prop('disabled', false);
+
+            // Initialize Word Frequency Chart if top_words exist
+            {% if top_words %}
+            var ctx = document.getElementById('wordFrequencyChart');
+            if (ctx) { // Check if canvas element exists
+                var labels = [];
+                var data = [];
+                var backgroundColors = [];
+
+                {% for word, count in top_words %}
+                labels.push("{{ word }}");
+                data.push({{ count }});
+        backgroundColors.push(getRandomColor());
+        {% endfor %}
+
+        new Chart(ctx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Word Frequency',
+                    data: data,
+                    backgroundColor: backgroundColors,
+                    borderColor: '#495057',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Occurrences',
+                            font: {
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0,0,0,0.05)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Words',
+                            font: {
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return context.parsed.y + ' occurrence' + (context.parsed.y !== 1 ? 's' : '');
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        function getRandomColor() {
+            var colors = [
+                '#4e79a7', '#f28e2b', '#e15759', '#76b7b2',
+                '#59a14f', '#edc948', '#b07aa1', '#ff9da7',
+                '#9c755f', '#bab0ac'
+            ];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+            }
+        {% endif %}
+        });
+    </script>
 </body>
+
 </html>
