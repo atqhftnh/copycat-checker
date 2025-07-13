@@ -287,10 +287,10 @@
         {% if user.is_authenticated %}
           {% if user.userprofile.is_lecturer %}
             <a href="{% url 'lecturer_dashboard' %}">Dashboard</a>
-          {% else %} {# Assuming other authenticated users are students #}
+          {% else %}
             <a href="{% url 'student_dashboard' %}">Dashboard</a>
           {% endif %}
-        {% else %} {# Not authenticated, redirect to login #}
+        {% else %}
           <a href="{% url 'login' %}">Dashboard</a>
         {% endif %}
       </nav>
