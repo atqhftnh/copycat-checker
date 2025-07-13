@@ -292,6 +292,152 @@
         text-align: center;
       }
     }
+
+    /* User Profile Modal Styles */
+    .profile-modal-overlay {
+        display: none; /* Hidden by default */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.4); /* Semi-transparent background */
+        z-index: 1000; /* Ensure it's on top */
+        backdrop-filter: blur(2px); /* Subtle blur effect */
+        justify-content: center;
+        align-items: flex-start; /* Align to top */
+        padding-top: 80px; /* Space from top, below header */
+    }
+
+    .profile-modal-content {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        width: 90%;
+        max-width: 380px; /* Smaller width for a popover feel */
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        position: relative;
+        animation: fadeInScale 0.2s ease-out; /* Simple animation */
+        color: #374151; /* Default text color */
+    }
+
+    @keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .profile-modal-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 24px;
+        cursor: pointer;
+        color: #6b7280;
+        background: none;
+        border: none;
+        transition: color 0.15s;
+    }
+
+    .profile-modal-close:hover {
+        color: #111827;
+    }
+
+    .profile-modal-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #ff7d0b; /* Orange title */
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .profile-info-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 15px;
+        font-size: 16px;
+        color: #4b5563;
+    }
+
+    .profile-info-item i {
+        color: #9cd7dd; /* Teal icon color */
+        font-size: 20px;
+    }
+
+    .profile-info-item strong {
+        color: #111827;
+        font-weight: 600;
+    }
+
+    .profile-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .profile-action-btn {
+        width: 100%;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease-in-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .profile-action-btn.logout {
+        background-color: #ebbe87; /* Peach color */
+        color: #374151;
+    }
+
+    .profile-action-btn.logout:hover {
+        background-color: #d4a574;
+        box-shadow: 0 4px 12px rgba(235, 190, 135, 0.3);
+    }
+
+    .profile-action-btn.delete {
+        background-color: #dc2626; /* Red for delete */
+        color: white;
+    }
+
+    .profile-action-btn.delete:hover {
+        background-color: #b91c1c;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+
+    @media (max-width: 480px) {
+        .profile-modal-content {
+            padding: 20px;
+            margin: 50px auto 0; /* Adjust top margin for smaller screens */
+        }
+        .profile-modal-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        .profile-info-item {
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+        .profile-action-btn {
+            font-size: 15px;
+            padding: 10px 15px;
+        }
+    }
   </style>
 
   {% block extra_css %}{% endblock %}
@@ -367,6 +513,46 @@
     </div>
   </footer>
 
+  {% if user.is_authenticated %}
+  <div id="userProfileModal" class="profile-modal-overlay">
+      <div class="profile-modal-content">
+          <button class="profile-modal-close" onclick="closeUserProfileModal()">&times;</button>
+          <h3 class="profile-modal-title">My Profile</h3>
+
+          <div class="profile-info">
+              <div class="profile-info-item">
+                  <i class="fas fa-user"></i>
+                  <span>Full Name: <strong>{{ user.userprofile.full_name|default:"N/A" }}</strong></span>
+              </div>
+              <div class="profile-info-item">
+                  <i class="fas fa-envelope"></i>
+                  <span>Email: <strong>{{ user.email|default:"N/A" }}</strong></span>
+              </div>
+              <div class="profile-info-item">
+                  <i class="fas fa-user-tag"></i>
+                  <span>Role: <strong>
+                      {% if user.userprofile.is_lecturer %}Lecturer{% else %}Student{% endif %}
+                  </strong></span>
+              </div>
+          </div>
+
+          <div class="profile-actions">
+              <form method="post" action="{% url 'logout' %}" style="width: 100%;">
+                  {% csrf_token %}
+                  <button type="submit" class="profile-action-btn logout">
+                      <i class="fas fa-sign-out-alt"></i> Logout
+                  </button>
+              </form>
+
+              {# Placeholder for Delete Account - Requires backend implementation #}
+              <button class="profile-action-btn delete" onclick="confirmDeleteAccount()">
+                  <i class="fas fa-trash-alt"></i> Delete Account
+              </button>
+          </div>
+      </div>
+  </div>
+  {% endif %}
+
   <!-- JavaScript -->
   <script>
     // Smooth scrolling for navigation links (removed as no longer needed for #anchors)
@@ -382,6 +568,76 @@
     //     }
     //   });
     // });
+
+    const userProfileBadge = document.getElementById('userProfileBadge');
+    const userProfileModal = document.getElementById('userProfileModal');
+
+    if (userProfileBadge) {
+        userProfileBadge.addEventListener('click', openUserProfileModal);
+    }
+
+    function openUserProfileModal() {
+        if (userProfileModal) {
+            userProfileModal.style.display = 'flex'; // Use flex to center content
+            document.body.style.overflow = 'hidden'; // Prevent scrolling background
+        }
+    }
+
+    function closeUserProfileModal() {
+        if (userProfileModal) {
+            userProfileModal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Re-enable scrolling
+        }
+    }
+
+    // Close modal if clicking outside the content
+    if (userProfileModal) {
+        userProfileModal.addEventListener('click', function(event) {
+            if (event.target === userProfileModal) {
+                closeUserProfileModal();
+            }
+        });
+    }
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && userProfileModal && userProfileModal.style.display === 'flex') {
+            closeUserProfileModal();
+        }
+    });
+
+    // Function for Delete Account (Placeholder - requires backend)
+    function confirmDeleteAccount() {
+        // IMPORTANT: This is a client-side confirmation.
+        // You MUST implement a robust backend view for account deletion.
+        // This should ideally be a POST request to a dedicated URL.
+        if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+            // Redirect or make an AJAX call to your Django delete account URL
+            // Example: window.location.href = "{% url 'delete_account' %}";
+            // Or use fetch API for a POST request:
+            // fetch("{% url 'delete_account' %}", {
+            //     method: 'POST',
+            //     headers: {
+            //         'X-CSRFToken': '{{ csrf_token }}', // Important for Django POST requests
+            //         'Content-Type': 'application/json'
+            //     },
+            //     body: JSON.stringify({})
+            // }).then(response => {
+            //     if (response.ok) {
+            //         alert('Account deleted successfully!');
+            //         window.location.href = "{% url 'login' %}"; // Redirect after deletion
+            //     } else {
+            //         alert('Failed to delete account. Please try again.');
+            //     }
+            // }).catch(error => {
+            //     console.error('Error deleting account:', error);
+            //     alert('An error occurred while deleting your account.');
+            // });
+
+            alert('Account deletion initiated. (Backend implementation required)');
+            // For now, just log or show an alert, as the backend isn't ready.
+        }
+    }
   </script>
 
   {% block extra_js %}{% endblock %}
