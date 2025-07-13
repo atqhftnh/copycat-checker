@@ -42,15 +42,17 @@ INSTALLED_APPS = (
     'storages'
 )
 
-MIDDLEWARE = [ 
-    'django.middleware.security.SecurityMiddleware', # ADDED for modern Django
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    # ⭐ NEW: Add LocaleMiddleware here ⭐
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware', # Existing, but good placement
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 TEMPLATES = [
@@ -101,7 +103,7 @@ USE_I18N = True # Keep True
 
 USE_TZ = True # Keep True, essential for timezone-aware datetimes
 
-PDF_TO_TEXT = os.environ.get('PDF_TO_TEXT_PATH', '/usr/bin/pdftotext')  # Ensure this path is correct and accessible
+PDF_TO_TEXT = os.environ.get('PDF_TO_TEXT_PATH', '/usr/bin/pdftotext')   # Ensure this path is correct and accessible
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/topics/settings/
@@ -135,14 +137,14 @@ MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 MEDIA_ROOT = ''
 
 GOOGLE_SEARCH_API_ENDPOINT = "https://www.googleapis.com/customsearch/v1"
-GOOGLE_SEARCH_API_KEY = os.environ.get("GOOGLE_SEARCH_API_KEY")  # Google API Key
-GOOGLE_SEARCH_ENGINE_ID = os.environ.get("GOOGLE_SEARCH_ENGINE_ID")  #  CSE ID (Custom Search Engine ID)
+GOOGLE_SEARCH_API_KEY = os.environ.get("GOOGLE_SEARCH_API_KEY")   # Google API Key
+GOOGLE_SEARCH_ENGINE_ID = os.environ.get("GOOGLE_SEARCH_ENGINE_ID")    #   CSE ID (Custom Search Engine ID)
 
 PLAGIARISM_SETTINGS = {
-    'MIN_SIMILARITY_THRESHOLD': 30,  # Minimum similarity percentage to consider
-    'MAX_THREADS': 5,  # Max concurrent threads for processing
+    'MIN_SIMILARITY_THRESHOLD': 30,   # Minimum similarity percentage to consider
+    'MAX_THREADS': 5,   # Max concurrent threads for processing
     'REQUEST_TIMEOUT': 10,  # Seconds before timing out a request
-    'CACHE_EXPIRATION': 3600,  # 1 hour cache for API results
+    'CACHE_EXPIRATION': 3600,   # 1 hour cache for API results
     'BLACKLISTED_DOMAINS': [
         'scribd.com', 'slideshare.net', 'academia.edu'
     ],
