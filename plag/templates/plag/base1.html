@@ -285,8 +285,8 @@
       <nav class="nav">
         {# Dashboard link - dynamically redirects based on user role #}
         {% if user.is_authenticated %}
-          {# Only show Dashboard link if user is NOT a lecturer #}
-          {% if not user.userprofile.is_lecturer %}
+          {# Check if userprofile exists and if user is NOT a lecturer #}
+          {% if user.userprofile and not user.userprofile.is_lecturer %}
             <a href="{% url 'student_dashboard' %}">Dashboard</a>
           {% endif %}
         {% else %} {# Not authenticated, redirect to login #}
