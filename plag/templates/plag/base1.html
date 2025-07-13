@@ -309,7 +309,7 @@
       <nav class="nav">
         {% if user.is_authenticated %}
           {% if user.userprofile %}
-            {% if user.userprofile.is_lecturer %}
+            {% if user.userprofile.role == 'lecturer' %}
               <a href="{% url 'lecturer_dashboard' %}">Dashboard</a>
             {% else %}
               <a href="{% url 'student_dashboard' %}">Dashboard</a>
