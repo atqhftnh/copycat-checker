@@ -15,7 +15,7 @@ from .views import (
     download_submissions,
     upload_report,
     leave_classroom,
-    student_dashboard_view, # New import for dashboard
+    student_dashboard,
     view_specific_scan,
 )
 
