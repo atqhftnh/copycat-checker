@@ -432,92 +432,100 @@
             }, 200);
         }
 
-        // ===== DOCUMENT READY =====
-        $(document).ready(function () {
-            // Enable the print button once the DOM is fully loaded for past scans
-            $('#printButton').prop('disabled', false);
+        // Define top_words data as a JavaScript variable
+        // This makes the data available to JavaScript without needing Django template tags inside functions
+        var chartTopWordsData = {{ top_words| safe }}; // Use |safe to prevent auto-escaping of JSON
 
-            // Initialize Word Frequency Chart if top_words exist
-            {% if top_words %}
+        // ===== CHART INITIALIZATION =====
+        function initWordFrequencyChart(topWords) {
             var ctx = document.getElementById('wordFrequencyChart');
-            if (ctx) { // Check if canvas element exists
+            if (ctx && topWords && topWords.length > 0) { // Check if canvas element exists and data is not empty
                 var labels = [];
                 var data = [];
                 var backgroundColors = [];
 
-                {% for word, count in top_words %}
-                labels.push("{{ word }}");
-                data.push({{ count }});
-        backgroundColors.push(getRandomColor());
-        {% endfor %}
+                topWords.forEach(function (item) {
+                    labels.push(item[0]); // word
+                    data.push(item[1]); // count
+                    backgroundColors.push(getRandomColor());
+                });
 
-        new Chart(ctx.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Word Frequency',
-                    data: data,
-                    backgroundColor: backgroundColors,
-                    borderColor: '#495057',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Occurrences',
-                            font: {
-                                weight: 'bold'
+                new Chart(ctx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Word Frequency',
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderColor: '#495057',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Occurrences',
+                                    font: {
+                                        weight: 'bold'
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0,0,0,0.05)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Words',
+                                    font: {
+                                        weight: 'bold'
+                                    }
+                                },
+                                grid: {
+                                    display: false
+                                }
                             }
                         },
-                        grid: {
-                            color: 'rgba(0,0,0,0.05)'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Words',
-                            font: {
-                                weight: 'bold'
-                            }
-                        },
-                        grid: {
-                            display: false
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function (context) {
-                                return context.parsed.y + ' occurrence' + (context.parsed.y !== 1 ? 's' : '');
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return context.parsed.y + ' occurrence' + (context.parsed.y !== 1 ? 's' : '');
+                                    }
+                                }
                             }
                         }
                     }
+                });
+
+                function getRandomColor() {
+                    var colors = [
+                        '#4e79a7', '#f28e2b', '#e15759', '#76b7b2',
+                        '#59a14f', '#edc948', '#b07aa1', '#ff9da7',
+                        '#9c755f', '#bab0ac'
+                    ];
+                    return colors[Math.floor(Math.random() * colors.length)];
                 }
             }
-        });
-
-        function getRandomColor() {
-            var colors = [
-                '#4e79a7', '#f28e2b', '#e15759', '#76b7b2',
-                '#59a14f', '#edc948', '#b07aa1', '#ff9da7',
-                '#9c755f', '#bab0ac'
-            ];
-            return colors[Math.floor(Math.random() * colors.length)];
         }
-            }
-        {% endif %}
+
+        // ===== DOCUMENT READY =====
+        $(document).ready(function () {
+            // Enable the print button once the DOM is fully loaded for past scans
+            // This assumes scan_detail.html is only for viewing pre-processed results
+            $('#printButton').prop('disabled', false);
+
+            // Initialize Word Frequency Chart if top_words exist
+            initWordFrequencyChart(chartTopWordsData); // Pass the JavaScript variable
         });
     </script>
 </body>
