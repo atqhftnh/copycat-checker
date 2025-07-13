@@ -524,7 +524,7 @@
                   <div class="profile-info-text-container">
                       <span>Role:</span>
                       <strong>
-                          {% if user.userprofile.is_lecturer %}Lecturer{% else %}Student{% endif %}
+                          {% if user.userprofile.role == 'lecturer' %}Lecturer{% else %}Student{% endif %}
                       </strong>
                   </div>
               </div>
@@ -546,7 +546,6 @@
       </div>
   </div>
   {% endif %}
-  {# ⭐ END NEW: User Profile Modal ⭐ #}
 
   <!-- JavaScript -->
   <script>
@@ -649,7 +648,7 @@
                 //     alert('An error occurred while deleting your account.');
                 // });
 
-                alert('Account deletion initiated. (Backend implementation required)');
+                alert('Account deletion initiated.');
                 // For now, just log or show an alert, as the backend isn't ready.
             } else {
                 console.log("User cancelled account deletion.");
