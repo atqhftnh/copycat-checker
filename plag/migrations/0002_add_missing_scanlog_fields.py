@@ -3,35 +3,30 @@
 import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
-from django.db.migrations import RunPython # Make sure RunPython is imported
-import django.db.models.fields.json # Make sure this is imported for JSONField
+from django.db.migrations import RunPython
+import django.db.models.fields.json
 
 class Migration(migrations.Migration):
 
     initial = False
 
     dependencies = [
-        ('plag', '0001_initial'), # <--- IMPORTANT: Confirm this is your last successful plag migration
+        ('plag', '0001_initial'), # IMPORTANT: Confirm this is your last successful plag migration
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
-        # Use RunPython.noop for ai_probability_score, burstiness_score, AND top_words
-        # because they now exist in the DB.
+        # Use RunPython.noop for fields that now exist in the DB.
         migrations.RunPython(RunPython.noop, RunPython.noop), # For ai_probability_score
         migrations.RunPython(RunPython.noop, RunPython.noop), # For burstiness_score
         migrations.RunPython(RunPython.noop, RunPython.noop), # For top_words
+        migrations.RunPython(RunPython.noop, RunPython.noop), # For text_snippet <-- NEW ADDITION
 
-        # Add only the fields that are STILL missing (if any)
+        # Add only the fields that are STILL missing
         migrations.AddField(
             model_name='scanlog',
             name='ai_label',
             field=models.CharField(blank=True, max_length=50, null=True),
-        ),
-        migrations.AddField(
-            model_name='scanlog',
-            name='text_snippet',
-            field=models.TextField(blank=True, null=True),
         ),
         migrations.AddField(
             model_name='scanlog',
