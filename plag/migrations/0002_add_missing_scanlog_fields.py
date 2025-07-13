@@ -20,18 +20,14 @@ class Migration(migrations.Migration):
         migrations.RunPython(RunPython.noop, RunPython.noop), # For ai_probability_score
         migrations.RunPython(RunPython.noop, RunPython.noop), # For burstiness_score
         migrations.RunPython(RunPython.noop, RunPython.noop), # For top_words
-        migrations.RunPython(RunPython.noop, RunPython.noop), # For text_snippet <-- NEW ADDITION
+        migrations.RunPython(RunPython.noop, RunPython.noop), # For text_snippet
+        migrations.RunPython(RunPython.noop, RunPython.noop), # For document_name <-- NEW ADDITION
 
         # Add only the fields that are STILL missing
         migrations.AddField(
             model_name='scanlog',
             name='ai_label',
             field=models.CharField(blank=True, max_length=50, null=True),
-        ),
-        migrations.AddField(
-            model_name='scanlog',
-            name='document_name',
-            field=models.CharField(default='Unnamed Document', max_length=255),
         ),
         migrations.AddField(
             model_name='scanlog',
