@@ -454,11 +454,10 @@
             {# Fallback to username if full_name is not available #}
             {{ user.userprofile.full_name|default:user.username }}
           </span>
-          {# The primary Logout button is now in the modal, this one can be removed or kept as a fallback #}
-          {# <form method="post" action="{% url 'logout' %}" style="display: inline;">
+          <form method="post" action="{% url 'logout' %}" style="display: inline;">
             {% csrf_token %}
             <button type="submit" class="btn btn-secondary">Logout</button>
-          </form> #}
+          </form>
         {% else %}
           <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
         {% endif %}
@@ -499,7 +498,6 @@
     </div>
   </footer>
 
-  {# ⭐ NEW: User Profile Modal ⭐ #}
   {% if user.is_authenticated %}
   <div id="userProfileModal" class="profile-modal-overlay">
       <div class="profile-modal-content">
@@ -509,7 +507,8 @@
           <div class="profile-info">
               <div class="profile-info-item">
                   <i class="fas fa-user"></i>
-                  <span>Full Name: <strong>{{ user.userprofile.full_name|default:user.username }}</strong></span>
+                  <span>Full Name: </span>
+                  <strong>{{ user.userprofile.full_name|default:user.username }}</strong>
               </div>
               <div class="profile-info-item">
                   <i class="fas fa-envelope"></i>
