@@ -321,7 +321,7 @@
                     </div>
                     <div class="card-body">
                         <p class="lead">Overall Plagiarism Percentage: **{{
-                            scan_log.overall_plagiarism_percentage|default:"N/A" }}%**</p>
+                                scan_log.overall_plagiarism_percentage|default:"N/A" }}%**</p>
                         {% if scan_results %}
                         <h5 class="mt-4">Matching Sources:</h5>
                         <ul class="list-group list-group-flush">
@@ -330,7 +330,7 @@
                                 <p class="mb-1">Match: **{{ result.perc_of_duplication|default:"N/A" }}%** from
                                     {% if result.match_url %}
                                     <a href="{{ result.match_url }}" target="_blank">{{
-                                        result.match_display_url|default:"Unknown Source" }}</a>
+                                            result.match_display_url|default:"Unknown Source" }}</a>
                                     {% else %}
                                     {{ result.match_display_url|default:"Unknown Source" }}
                                     {% endif %}
@@ -434,7 +434,7 @@
 
         // Define top_words data as a JavaScript variable
         // This makes the data available to JavaScript without needing Django template tags inside functions
-        var chartTopWordsData = {{ top_words| safe }}; // Use |safe to prevent auto-escaping of JSON
+        var chartTopWordsData = {{ top_words | safe }}; // Use |safe to prevent auto-escaping of JSON
 
         // ===== CHART INITIALIZATION =====
         function initWordFrequencyChart(topWords) {
