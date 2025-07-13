@@ -38,6 +38,14 @@
         margin-bottom: 24px;
     }
 
+    /* Action Buttons Container in Header */
+    .header-actions {
+        display: flex;
+        flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+        gap: 15px; /* Space between buttons */
+        margin-top: 20px; /* Space from lecturer info */
+    }
+
     .leave-btn {
         background-color: rgba(220, 38, 38, 0.9);
         color: white;
@@ -50,12 +58,35 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
+        text-decoration: none; /* Ensure it looks like a button even if it's an anchor */
     }
 
     .leave-btn:hover {
         background-color: #dc2626;
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+
+    /* New Dashboard Button Style */
+    .dashboard-return-btn {
+        background-color: #ebbe87; /* Peach color for return button */
+        color: #374151; /* Dark text for contrast */
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .dashboard-return-btn:hover {
+        background-color: #d4a574; /* Darker peach on hover */
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(235, 190, 135, 0.3);
     }
 
     /* Tasks Section */
@@ -290,8 +321,15 @@
             gap: 12px;
         }
 
-        .leave-btn {
-            align-self: flex-start;
+        .header-actions { /* Adjust for mobile */
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .leave-btn, .dashboard-return-btn { /* Make buttons full width on mobile */
+            width: 100%;
+            justify-content: center;
         }
     }
 </style>
@@ -302,11 +340,29 @@
     <!-- Classroom Header -->
     <div class="classroom-header">
         <h1 class="classroom-title">{{ classroom.name }}</h1>
-        <div class="lecturer-info" style="flex-direction: column; align-items: flex-start; gap: 12px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-user-tie"></i>
-                <span>Lecturer: {{ classroom.lecturer.userprofile.full_name }}</span>
-            </div>
+        <div class="lecturer-info">
+            <i class="fas fa-user-tie"></i>
+            <span>Lecturer: {{ classroom.lecturer.userprofile.full_name }}</span>
+        </div>
+
+        <!-- Action Buttons for Classroom Header -->
+        <div class="header-actions">
+            {# Go to Dashboard Button - dynamically redirects based on user role #}
+            {% if user.is_authenticated %}
+                {% if user.userprofile.is_lecturer %}
+                    <a href="{% url 'lecturer_dashboard' %}" class="dashboard-return-btn">
+                        <i class="fas fa-arrow-left"></i> Go to Dashboard
+                    </a>
+                {% else %} {# Assuming other authenticated users are students #}
+                    <a href="{% url 'student_dashboard' %}" class="dashboard-return-btn">
+                        <i class="fas fa-arrow-left"></i> Go to Dashboard
+                    </a>
+                {% endif %}
+            {% else %} {# Not authenticated, redirect to login #}
+                <a href="{% url 'login' %}" class="dashboard-return-btn">
+                    <i class="fas fa-arrow-left"></i> Go to Dashboard
+                </a>
+            {% endif %}
 
             <!-- Leave Classroom Form -->
             <form method="POST" action="{% url 'leave_classroom' classroom.id %}">

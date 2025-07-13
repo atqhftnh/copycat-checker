@@ -693,18 +693,25 @@
 <script type="text/javascript">
     // ===== PRINT FUNCTION =====
     function preparePrint() {
-        // Show print-specific elements
-        $('.print-header, .print-footer').show();
+        console.log("Print button clicked. preparePrint function called.");
+        try {
+            // Show print-specific elements
+            $('.print-header, .print-footer').show();
 
-        // Add a small delay to ensure elements are visible before printing
-        setTimeout(function () {
-            window.print();
-
-            // Hide print elements again after printing
+            // Add a small delay to ensure elements are visible before printing
             setTimeout(function () {
-                $('.print-header, .print-footer').hide();
-            }, 500);
-        }, 200);
+                console.log("Calling window.print()...");
+                window.print();
+
+                // Hide print elements again after printing
+                setTimeout(function () {
+                    console.log("Hiding print elements after print dialog closed.");
+                    $('.print-header, .print-footer').hide();
+                }, 500);
+            }, 200);
+        } catch (e) {
+            console.error("Error in preparePrint function:", e);
+        }
     }
 
     // Define top_words data as a JavaScript variable

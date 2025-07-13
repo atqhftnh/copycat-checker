@@ -428,7 +428,7 @@
         </p>
         {% if user.is_authenticated %}
           {% if user.userprofile.role == 'student' %}
-            <a href="/student/dashboard/" class="action-btn btn-upload"> 📤 Upload Document </a>
+            <a href="/student-dashboard/" class="action-btn btn-upload"> 📤 Upload Document </a>
           {% else %}
             <button type="button" class="action-btn btn-classroom" onclick="showAccessDeniedAlert()">
               👥 You do not have access for this feature
@@ -454,7 +454,7 @@
             👥 Classroom
             </a>
           {% else %}
-            <a href="/student/dashboard/" class="action-btn btn-upload"> 👥 Classroom </a>
+            <a href="/student-dashboard/" class="action-btn btn-upload"> 👥 Classroom </a>
           {% endif %}
         {% else %}
           <a href="/login/" class="action-btn btn-classroom">

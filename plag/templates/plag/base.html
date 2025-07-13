@@ -114,12 +114,16 @@
 
         .logo-text {
             font-size: 20px;
-            font-weight: bold;
-            color: #111827;
+            font-weight: 700;
+            background: linear-gradient(to right, #ff7d0b, #00a0aa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .nav {
             display: none;
+            /* Hidden by default for mobile, shown with media query */
             gap: 24px;
         }
 
@@ -128,10 +132,16 @@
             text-decoration: none;
             transition: color 0.15s;
             font-weight: 500;
+            padding: 8px 12px;
+            /* Added padding for better click area */
+            border-radius: 6px;
+            /* Slightly rounded corners for nav items */
         }
 
         .nav a:hover {
             color: #ff7d0b;
+            background-color: rgba(255, 125, 11, 0.05);
+            /* Subtle background on hover */
         }
 
         .user-section {
@@ -305,9 +315,16 @@
             </a>
 
             <nav class="nav">
-                <a href="#features">Features</a>
-                <a href="#upload">Upload</a>
-                <a href="#classroom">Classroom</a>
+                {# Dashboard link - dynamically redirects based on user role #}
+                {% if user.is_authenticated %}
+                {% if user.userprofile.is_lecturer %}
+                <a href="{% url 'lecturer_dashboard' %}">Dashboard</a>
+                {% else %} {# Assuming other authenticated users are students #}
+                <a href="{% url 'student_dashboard' %}">Dashboard</a>
+                {% endif %}
+                {% else %} {# Not authenticated, redirect to login #}
+                <a href="{% url 'login' %}">Dashboard</a>
+                {% endif %}
             </nav>
 
             <div class="user-section">
