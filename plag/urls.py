@@ -1,12 +1,12 @@
-from django.urls import path, re_path, include # <-- Replaced 'patterns' and 'url'
+from django.urls import path, re_path, include
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth import views as auth_views
 
-from . import views 
-from . import const 
+from . import views
+from . import const
 from .views import (
     student_classroom_detail,
     lecturer_classroom_detail,
@@ -20,7 +20,7 @@ from .views import (
 )
 
 
-urlpatterns = [ 
+urlpatterns = [
     # Home Page URLs
     path('index-trial/', views.IndexTrialView.as_view(), name='index_trial'),
 
@@ -29,7 +29,7 @@ urlpatterns = [
 
     # Static Pages using TemplateView
     path('products/', TemplateView.as_view(template_name='plag/static/products.html'), name='products'),
-    path('features-screenshots/', TemplateView.as_view(template_name='plag/static/features_and_screenshots.html'), name='features'),
+    path('features-screenshots/', TemplateView.as_as_view(template_name='plag/static/features_and_screenshots.html'), name='features'),
     path('url-protection/', TemplateView.as_view(template_name='plag/static/url_protection.html'), name='url_prot'),
     path('document-protection/', TemplateView.as_view(template_name='plag/static/doc_protection.html'), name='doc_prot'),
     path('pricing/', TemplateView.as_view(template_name='plag/static/pricing.html'), name='pricing'),
@@ -45,6 +45,11 @@ urlpatterns = [
 
     # Account URLs
     path('account/profile/', login_required(views.ProfileView.as_view()), name='profile'),
+
+    # ⭐ ADDING delete_account here ⭐
+    # Assuming 'accounts/' is prefixed in your main project urls.py
+    path('delete/', views.DeleteAccountView.as_view(), name='delete_account'),
+
 
     # Recent Scans URLs (use re_path for optional regex parts)
     path('account/recent-scans/', views.recent_scans, name='recent_scans_default'),
@@ -78,14 +83,13 @@ urlpatterns = [
     path('login/', views.custom_login, name='login'),
     path('register/', views.register, name='register'),
     path('logout/', views.custom_logout, name='logout'),
-    path('accounts/', include('plag.urls')),
+    # ⭐ REMOVED: path('accounts/', include('plag.urls')), - THIS LINE WAS RECURSIVE AND INCORRECT ⭐
 
     # Student URLs
     path('student-dashboard/', views.student_dashboard, name='student_dashboard'),
     path('student/scan/<int:scan_id>/', view_specific_scan, name='view_specific_scan'),
     path('student/classroom/<int:classroom_id>/', student_classroom_detail, name='student_classroom_detail'),
     path('student/join/', views.join_classroom, name='join_classroom'),
-    #path('join_classroom/', join_classroom, name='join_classroom'),
     path('leave-classroom/<int:classroom_id>/', views.leave_classroom, name='leave_classroom'),
     path('upload-report/', upload_report, name='upload_report'),
     path('scan/<int:scan_id>/', view_specific_scan, name='view_specific_scan'),
