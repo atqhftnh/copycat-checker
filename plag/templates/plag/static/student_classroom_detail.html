@@ -411,7 +411,7 @@
                 <div class="submission-form">
                     <form method="post" enctype="multipart/form-data" action="{% url 'upload_report' %}">
                         {% csrf_token %}
-                        <input type="hidden" name="task_id" value="{{ entry.task.id }}" />
+                        <input type="hidden" name="task_id" value="{{ entry.task.id }}"/>
 
                         <div class="form-group">
                             <label class="form-label">
