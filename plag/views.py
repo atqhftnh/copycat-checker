@@ -180,7 +180,7 @@ def student_classroom_detail(request, classroom_id):
             'submission': student_submission_for_task # The actual Submission object or None
         })
 
-    return render(request, 'plag/static/student_classroom_detail.html', {
+    return render(request, 'plag/student_classroom_detail.html', {
         'classroom': classroom,
         'tasks': tasks_with_submission_info,
     })
