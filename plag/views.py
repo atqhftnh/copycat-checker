@@ -166,9 +166,23 @@ def student_classroom_detail(request, classroom_id):
     # Change this line to use Task instead of Assignment
     tasks = classroom.tasks.all().order_by('-created_at')
     
+    tasks_with_submission_info = []
+    for task in tasks:
+        # Get the submission for the current logged-in student and this specific task
+        student_submission_for_task = Submission.objects.filter(
+            task=task,
+            student=request.user
+        ).first() # .first() is correct here because there should only be one submission per student per task
+
+        tasks_with_submission_info.append({
+            'task': task,
+            'has_submitted': bool(student_submission_for_task), # True if submission exists, False otherwise
+            'submission': student_submission_for_task # The actual Submission object or None
+        })
+
     return render(request, 'plag/static/student_classroom_detail.html', {
         'classroom': classroom,
-        'tasks': tasks
+        'tasks': tasks_with_submission_info,
     })
 
 
