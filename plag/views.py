@@ -755,17 +755,47 @@ def download_submissions(request, task_id):
 # For final report submission
 @login_required
 def upload_report(request):
-    
+
     if request.method == 'POST':
         task_id = request.POST.get('task_id')
         file = request.FILES.get('document')
-        
+
+        logger.info(f"Upload Report: POST request received for task_id={task_id}")
+        logger.info(f"Request FILES content: {request.FILES}")
+        logger.info(f"Uploaded 'document' file: {file}")
+
         if file and task_id:
             try:
                 task = Task.objects.get(id=task_id)
+                logger.info(f"Task found: {task.title} (ID: {task.id})")
+
+                # Log file details
+                logger.info(f"File details: name='{file.name}', size={file.size} bytes, content_type='{file.content_type}'")
+
+                # Check against Django's default max memory size for uploads
+                # This is just a check, not the actual limit enforcement
+                if file.size > settings.FILE_UPLOAD_MAX_MEMORY_SIZE:
+                    logger.warning(f"Uploaded file '{file.name}' ({file.size} bytes) exceeds FILE_UPLOAD_MAX_MEMORY_SIZE ({settings.FILE_UPLOAD_MAX_MEMORY_SIZE} bytes).")
+                    messages.error(request, f"File '{file.name}' is too large. Max size allowed is {settings.FILE_UPLOAD_MAX_MEMORY_SIZE / (1024*1024):.1f} MB.")
+                    return redirect('student_classroom_detail', classroom_id=task.classroom.id)
+
+
                 # Delete previous submission if exists
-                Submission.objects.filter(task=task, student=request.user).delete()
-                
+                existing_submission = Submission.objects.filter(task=task, student=request.user).first()
+                if existing_submission:
+                    # Optional: Delete the old file from S3 if it exists
+                    if existing_submission.report_file:
+                        try:
+                            existing_submission.report_file.delete(save=False) # delete file from storage
+                            logger.info(f"Deleted old report file from storage: {existing_submission.report_file.name}")
+                        except Exception as e:
+                            logger.error(f"Error deleting old report file {existing_submission.report_file.name}: {e}")
+                    existing_submission.delete() # delete the database record
+                    logger.info(f"Deleted existing submission for task {task.id} by user {request.user.username}")
+                else:
+                    logger.info(f"No existing submission found for task {task.id} by user {request.user.username}")
+
+
                 submission = Submission(
                     task=task,
                     student=request.user,
@@ -773,13 +803,20 @@ def upload_report(request):
                 )
                 submission.save()
                 messages.success(request, 'Final report submitted successfully!')
+                logger.info(f"Report '{file.name}' submitted successfully for task {task.id} by user {request.user.username}")
                 return redirect('student_classroom_detail', classroom_id=task.classroom.id)
             except Task.DoesNotExist:
-                messages.error(request, 'Invalid task')
+                logger.error(f"Upload Report: Task with ID {task_id} not found.")
+                messages.error(request, 'Invalid task.')
+            except Exception as e:
+                logger.error(f"Upload Report: An unexpected error occurred during submission: {e}", exc_info=True)
+                messages.error(request, f'An error occurred during submission: {e}')
         else:
-            messages.error(request, 'Please select a file to upload')
-    
+            logger.warning(f"Upload Report: File or task_id missing. File: {file}, Task ID: {task_id}")
+            messages.error(request, 'Please select a file to upload.')
+
     return redirect('student_dashboard')
+
 
 @login_required
 def edit_classroom(request, classroom_id):
