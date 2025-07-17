@@ -159,34 +159,32 @@ def view_specific_scan(request, scan_id):
 def student_classroom_detail(request, classroom_id):
     classroom = get_object_or_404(Classroom, id=classroom_id)
 
-    # Validate that the logged-in user is indeed a student in this classroom
-    # The 'is_student' attribute is assumed to be directly on the User model
-    # and the user should be part of the classroom's 'students' ManyToMany field.
-    if not hasattr(request.user, 'is_student') or not request.user.is_student or \
+    # **Crucial Check:** Ensure the logged-in user is a student AND is enrolled in this classroom.
+    # 1. Check if the user's role is 'student' using UserProfile
+    # 2. Check if the user is explicitly in the 'students' M2M field of the classroom
+    if not hasattr(request.user, 'userprofile') or \
+       request.user.userprofile.role != 'student' or \
        not classroom.students.filter(pk=request.user.pk).exists():
         messages.error(request, "You are not authorized to view this classroom or not enrolled.")
-        return redirect('student_dashboard') # Redirect to a safe place like student dashboard or index
+        return redirect('student_dashboard') # Or wherever you want to redirect unauthorized users
 
     tasks = classroom.tasks.all().order_by('-created_at')
 
-    # Prepare a list of tasks, each with the current user's specific submission
     tasks_with_user_submission = []
     for task in tasks:
-        # Fetch the submission made by the current logged-in User for THIS specific task.
-        # Your Submission model's 'student' field is a ForeignKey to the User model directly.
         user_submission_for_task = Submission.objects.filter(
             task=task,
-            student=request.user # Filter by the current User object directly
-        ).first() # .first() returns the object or None if not found
+            student=request.user # Correct, as Submission.student links directly to User
+        ).first()
 
         tasks_with_user_submission.append({
             'task': task,
-            'user_submission': user_submission_for_task, # This will be the Submission object or None
+            'user_submission': user_submission_for_task,
         })
 
     context = {
         'classroom': classroom,
-        'tasks_with_user_submission': tasks_with_user_submission, # Pass the enriched list to the template
+        'tasks_with_user_submission': tasks_with_user_submission,
     }
     return render(request, 'plag/static/student_classroom_detail.html', context)
 
@@ -212,18 +210,29 @@ def join_classroom(request):
 
 
 @login_required
-def leave_classroom(request, classroom_id, student_id):
-
+def leave_classroom(request, classroom_id):
     classroom = get_object_or_404(Classroom, id=classroom_id)
-    student = get_object_or_404(User, id=student_id, userprofile__role='student')
-    
-    if request.method == 'POST':
-        Submission.objects.filter(student=student, task__classroom=classroom).delete()
-        classroom.students.remove(request.user)
-        messages.success(request, f'You have left {classroom.name}.')
-        return redirect('index')
 
-    return redirect('index')
+    # The student leaving is the currently logged-in user
+    current_user = request.user
+
+    # Optional: Add an extra check if you want to ensure only actual students can leave
+    # and they are actually enrolled.
+    if not hasattr(current_user, 'userprofile') or \
+       current_user.userprofile.role != 'student' or \
+       not classroom.students.filter(pk=current_user.pk).exists():
+        messages.error(request, "You cannot leave this classroom as you are not an enrolled student.")
+        return redirect('student_dashboard') # Or an appropriate page
+
+    try:
+        # Remove the current user from the classroom's students ManyToMany relationship
+        classroom.students.remove(current_user)
+        messages.success(request, f"You have successfully left '{classroom.name}'.")
+    except Exception as e:
+        messages.error(request, f"Error leaving classroom: {e}")
+
+    # Redirect the user back to their student dashboard or wherever appropriate
+    return redirect('student_dashboard')
 
 
 @login_required
