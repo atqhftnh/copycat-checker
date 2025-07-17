@@ -567,16 +567,21 @@
         </tbody>
     </table>
 </div>
-{% endif %}
-
-<!-- Text Sample Section -->
-{% if text_snippet %}
-<h2>Analyzed Text Sample</h2>
-<div class="text-sample">
-    <p>The following text excerpt was analyzed:</p>
-    <pre>{{ text_snippet }}</pre>
-    <p class="text-muted no-print"><small>Sample limited to 500 characters for demonstration</small></p>
-</div>
+{% else %}
+    {# This block will render if scan_results is empty #}
+    <div class="no-matches-message" style="
+        text-align: center;
+        padding: 30px;
+        background-color: #f8f9fa;
+        border: 1px solid #e2e6ea;
+        border-radius: 8px;
+        margin-top: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    ">
+        <i class="fas fa-seedling" style="font-size: 3em; color: #28a745; margin-bottom: 15px;"></i>
+        <p style="font-size: 1.5em; font-weight: bold; color: #343a40;">Your document is 100% ORIGINAL!</p>
+        <p style="font-size: 1em; color: #6c757d;">No significant plagiarism matches were found with existing sources.</p>
+    </div>
 {% endif %}
 
 <!-- Print Footer -->
@@ -832,6 +837,7 @@
     function updateOverallPlagiarismDisplay(percentageString) {
         if (percentageString !== undefined && percentageString !== null && percentageString !== '-1') {
             const percentage = parseFloat(percentageString);
+            const displayPercentage = percentage === -1 ? 0 : percentage;
             const formattedPercentage = percentage.toFixed(2) + "%";
             averagePlagiarismPercentElement.html(formattedPercentage);
             overallPlagiarismDisplayElement.html(formattedPercentage);
