@@ -411,7 +411,7 @@
                 <div class="submission-form">
                     <form method="post" enctype="multipart/form-data" action="{% url 'upload_report' %}">
                         {% csrf_token %}
-                        <input type="hidden" name="task_id" value="{{ entry.task.id }}"/>
+                        <input type="hidden" name="task_id" value="{{ task.id }}" />
 
                         <div class="form-group">
                             <label class="form-label">
@@ -430,25 +430,19 @@
                 </div>
 
                 <!-- Existing Submission (if any) -->
-                {% if entry.has_submitted %}
+                {% if task.submissions.all %}
                 <div class="existing-submission">
                     <div class="submission-icon">
                         <i class="fas fa-check-circle"></i>
                     </div>
                     <div class="submission-info">
                         <div class="submission-label">✓ Submitted:</div>
-                        {% if entry.submission.report_file and entry.submission.scan_log %}
-                        <a href="{% url 'view_specific_scan' entry.submission.scan_log.id %}" target="_blank" class="submission-link">
-                            {{ entry.submission.report_file.name|truncatechars:50 }}
+                        <a href="{{ task.submissions.first.report_file.url }}" target="_blank" class="submission-link">
+                            {{ task.submissions.first.report_file.name|truncatechars:50 }}
                         </a>
-                        {% elif entry.submission.report_file %}
-                        <span style="color: #6b7280;">{{ entry.submission.report_file.name|truncatechars:50 }} (Scan Pending)</span>
-                        {% else %}
-                        <span style="color: #6b7280;">No file attached or scan failed</span>
-                        {% endif %}
                     </div>
                     <div style="color: #059669; font-size: 12px">
-                        {% if entry.submission.scan_log %}<i class="fas fa-external-link-alt"></i>{% endif %}
+                        <i class="fas fa-external-link-alt"></i>
                     </div>
                 </div>
                 {% endif %}
