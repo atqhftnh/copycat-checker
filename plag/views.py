@@ -158,18 +158,37 @@ def view_specific_scan(request, scan_id):
 @login_required
 def student_classroom_detail(request, classroom_id):
     classroom = get_object_or_404(Classroom, id=classroom_id)
-    
-    if not request.user.student_classrooms.filter(id=classroom_id).exists():
-        messages.error(request, "You don't have access to this classroom")
-        return redirect('index')
-    
-    # Change this line to use Task instead of Assignment
+
+    # Validate that the logged-in user is indeed a student in this classroom
+    # The 'is_student' attribute is assumed to be directly on the User model
+    # and the user should be part of the classroom's 'students' ManyToMany field.
+    if not hasattr(request.user, 'is_student') or not request.user.is_student or \
+       not classroom.students.filter(pk=request.user.pk).exists():
+        messages.error(request, "You are not authorized to view this classroom or not enrolled.")
+        return redirect('student_dashboard') # Redirect to a safe place like student dashboard or index
+
     tasks = classroom.tasks.all().order_by('-created_at')
-    
-    return render(request, 'plag/static/student_classroom_detail.html', {
+
+    # Prepare a list of tasks, each with the current user's specific submission
+    tasks_with_user_submission = []
+    for task in tasks:
+        # Fetch the submission made by the current logged-in User for THIS specific task.
+        # Your Submission model's 'student' field is a ForeignKey to the User model directly.
+        user_submission_for_task = Submission.objects.filter(
+            task=task,
+            student=request.user # Filter by the current User object directly
+        ).first() # .first() returns the object or None if not found
+
+        tasks_with_user_submission.append({
+            'task': task,
+            'user_submission': user_submission_for_task, # This will be the Submission object or None
+        })
+
+    context = {
         'classroom': classroom,
-        'tasks': tasks
-    })
+        'tasks_with_user_submission': tasks_with_user_submission, # Pass the enriched list to the template
+    }
+    return render(request, 'plag/static/student_classroom_detail.html', context)
 
 
 @login_required

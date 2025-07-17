@@ -341,13 +341,17 @@
         <h1 class="classroom-title">{{ classroom.name }}</h1>
         <div class="lecturer-info">
             <i class="fas fa-user-tie"></i>
-            <span>Lecturer: {{ classroom.lecturer.userprofile.full_name }}</span>
+            <span>Lecturer: {{ classroom.lecturer.full_name }}</span> {# Use .full_name from UserProfile if lecturer is User #}
+            {# OR if lecturer is directly a User object with a custom field: {{ classroom.lecturer.get_full_name }} #}
+            {# Based on your models, classroom.lecturer is a User, so assuming get_full_name or adjust based on your User model #}
+            {# If 'full_name' is on UserProfile linked to lecturer User, you might need classroom.lecturer.userprofile.full_name #}
         </div>
 
         <div class="header-actions">
             {# Go to Dashboard Button - dynamically redirects based on user role #}
             {% if user.is_authenticated %}
-                {% if user.userprofile.is_lecturer %}
+                {# Assuming 'is_lecturer' is an attribute directly on the User model #}
+                {% if user.is_lecturer %}
                     <a href="{% url 'lecturer_dashboard' %}" class="dashboard-return-btn">
                         <i class="fas fa-arrow-left"></i> Go to Dashboard
                     </a>
@@ -379,9 +383,12 @@
             Assignments & Tasks
         </h2>
 
-        {% if tasks %}
+        {# Check the new context variable #}
+        {% if tasks_with_user_submission %}
         <div class="tasks-list">
-            {% for task in tasks %}
+            {# Loop through the new context variable #}
+            {% for item in tasks_with_user_submission %}
+            {% with task=item.task user_submission=item.user_submission %} {# Extract task and user_submission #}
             <div class="task-card">
                 <div class="task-header">
                     <h3 class="task-title">
@@ -403,8 +410,6 @@
                     {% endif %}
                 </div>
 
-                {# Find the current user's submission for this task #}
-                {% with user_submission=task.submissions.filter(student=user.userprofile).first %}
                 <div class="submission-form">
                     <form method="post" enctype="multipart/form-data" action="{% url 'upload_report' %}">
                         {% csrf_token %}
@@ -426,6 +431,7 @@
                     </form>
                 </div>
 
+                {# Now, simply check if user_submission exists, as it's either the object or None #}
                 {% if user_submission %}
                 <div class="existing-submission">
                     <div class="submission-icon">
@@ -442,8 +448,8 @@
                     </div>
                 </div>
                 {% endif %}
-                {% endwith %} {# End of with user_submission #}
             </div>
+            {% endwith %} {# End of with task user_submission #}
             {% endfor %}
         </div>
         {% else %}
