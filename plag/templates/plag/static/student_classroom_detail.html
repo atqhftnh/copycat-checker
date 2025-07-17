@@ -337,7 +337,6 @@
 
 {% block content %}
 <div class="classroom-container">
-    <!-- Classroom Header -->
     <div class="classroom-header">
         <h1 class="classroom-title">{{ classroom.name }}</h1>
         <div class="lecturer-info">
@@ -345,7 +344,6 @@
             <span>Lecturer: {{ classroom.lecturer.userprofile.full_name }}</span>
         </div>
 
-        <!-- Action Buttons for Classroom Header -->
         <div class="header-actions">
             {# Go to Dashboard Button - dynamically redirects based on user role #}
             {% if user.is_authenticated %}
@@ -364,7 +362,6 @@
                 </a>
             {% endif %}
 
-            <!-- Leave Classroom Form -->
             <form method="POST" action="{% url 'leave_classroom' classroom.id %}">
                 {% csrf_token %}
                 <button type="submit" class="leave-btn"
@@ -376,7 +373,6 @@
         </div>
     </div>
 
-    <!-- Tasks Section -->
     <div class="tasks-section">
         <h2 class="tasks-title">
             <i class="fas fa-tasks tasks-icon"></i>
@@ -407,7 +403,8 @@
                     {% endif %}
                 </div>
 
-                <!-- Submission Form -->
+                {# Find the current user's submission for this task #}
+                {% with user_submission=task.submissions.filter(student=user.userprofile).first %}
                 <div class="submission-form">
                     <form method="post" enctype="multipart/form-data" action="{% url 'upload_report' %}">
                         {% csrf_token %}
@@ -429,16 +426,15 @@
                     </form>
                 </div>
 
-                <!-- Existing Submission (if any) -->
-                {% if task.submissions.all %}
+                {% if user_submission %}
                 <div class="existing-submission">
                     <div class="submission-icon">
                         <i class="fas fa-check-circle"></i>
                     </div>
                     <div class="submission-info">
                         <div class="submission-label">✓ Submitted:</div>
-                        <a href="{{ task.submissions.first.report_file.url }}" target="_blank" class="submission-link">
-                            {{ task.submissions.first.report_file.name|truncatechars:50 }}
+                        <a href="{{ user_submission.report_file.url }}" target="_blank" class="submission-link">
+                            {{ user_submission.report_file.name|truncatechars:50 }}
                         </a>
                     </div>
                     <div style="color: #059669; font-size: 12px">
@@ -446,6 +442,7 @@
                     </div>
                 </div>
                 {% endif %}
+                {% endwith %} {# End of with user_submission #}
             </div>
             {% endfor %}
         </div>
