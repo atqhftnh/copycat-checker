@@ -661,26 +661,34 @@ def data_cleanse(request):
     return render(request, 'plag/dynamic/data_cleanse.html')
 
 
+User = get_user_model() # Get the active User model
+
 @login_required
 def create_classroom(request):
+    # Permission check: Ensure the logged-in user is a lecturer
+    # It assumes your User model has an 'is_lecturer' boolean field.
+    if not hasattr(request.user, 'is_lecturer') or not request.user.is_lecturer:
+        messages.error(request, "You do not have permission to create classrooms.")
+        return redirect('student_dashboard') # Redirect to an appropriate dashboard for non-lecturers
 
     if request.method == 'POST':
-        # Pass the request to the form for validation context
+        # Pass request.POST data and the request object itself to the form
         form = ClassroomForm(request.POST, request=request) 
         
         if form.is_valid():
             classroom = form.save(commit=False)
-            # Assign the current User object (who is a lecturer) directly
-            classroom.lecturer = request.user # <--- Change here: Assign request.user directly
-            classroom.save() 
+            # Assign the current logged-in User (who is a lecturer) directly
+            classroom.lecturer = request.user 
+            classroom.save() # The save method will generate the join_code here
             messages.success(request, f'Classroom "{classroom.name}" created successfully!')
             return redirect('lecturer_dashboard')
         else:
-            # If form is invalid, errors will be attached to 'form' and displayed in the template
+            # If form.is_valid() is False, errors are automatically attached to the form
+            # These errors will be displayed in the template.
             pass
 
     else: # GET request
-        form = ClassroomForm(request=request)
+        form = ClassroomForm(request=request) # Pass request for consistency
 
     return render(request, 'plag/static/create_classroom.html', {'form': form})
 
