@@ -663,11 +663,6 @@ def data_cleanse(request):
 
 @login_required
 def create_classroom(request):
-    # Check if the logged-in user is a lecturer using the 'is_lecturer' attribute
-    # This assumes your User model has an 'is_lecturer' boolean field.
-    if not hasattr(request.user, 'is_lecturer') or not request.user.is_lecturer:
-        messages.error(request, "You do not have permission to create classrooms.")
-        return redirect('student_dashboard') # Redirect non-lecturers to a student dashboard
 
     if request.method == 'POST':
         # Pass the request to the form for validation context
