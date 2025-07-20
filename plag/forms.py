@@ -107,14 +107,19 @@ class UserPreferencesForm(forms.ModelForm):
 
 
 class ClassroomForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None) # Pop 'request' before super()
+        super().__init__(*args, **kwargs)
+
     class Meta:
         model = Classroom
-        fields = ['name', 'group', 'intake']
+        fields = ['name', 'join_code', 'group', 'intake']
     
     def clean(self):
         cleaned_data = super().clean()
         name = cleaned_data.get('name')
-        group = cleaned_data.get('group') # Get the group data
+        group = cleaned_data.get('group')
+        join_code = cleaned_data.get('join_code')
 
         # Get the lecturer. This logic is correct for getting the lecturer context.
         lecturer = None
