@@ -663,17 +663,37 @@ def data_cleanse(request):
 
 @login_required
 def create_classroom(request):
-    
+    # Optional: Basic check to ensure only lecturers can access this.
+    # This assumes request.user has a one-to-one 'lecturerprofile'
+    # or you have a custom User model with an 'is_lecturer' flag.
+    # Adjust 'lecturerprofile' based on your actual model relationship.
+    if not hasattr(request.user, 'lecturerprofile'):
+        messages.error(request, "You do not have permission to create classrooms.")
+        return redirect('student_dashboard') # Redirect to appropriate dashboard for non-lecturers
+
     if request.method == 'POST':
-        form = ClassroomForm(request.POST)
+        # Pass the request object to the form.
+        # This allows the form's clean method to access request.user (and its lecturerprofile).
+        form = ClassroomForm(request.POST, request=request)
+        
         if form.is_valid():
             classroom = form.save(commit=False)
-            classroom.lecturer = request.user
+            # Assign the actual lecturer profile to the classroom instance.
+            # This is crucial because 'lecturer' isn't a field directly submitted by the form.
+            classroom.lecturer = request.user.lecturerprofile
             classroom.save()
-            messages.success(request, 'Classroom created successfully!')
+            messages.success(request, f'Classroom "{classroom.name}" created successfully!')
             return redirect('lecturer_dashboard')
-    else:
-        form = ClassroomForm()
+        else:
+            # If the form is invalid (e.g., due to duplicate errors from clean method),
+            # the errors are already attached to the 'form' object.
+            # No explicit messages.error() is needed here for form validation errors.
+            pass # The form will be rendered again with its errors.
+
+    else: # GET request
+        # Pass the request object to the form for GET requests too, for consistency.
+        form = ClassroomForm(request=request)
+
     return render(request, 'plag/static/create_classroom.html', {'form': form})
 
 @login_required

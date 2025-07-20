@@ -109,8 +109,55 @@ class UserPreferencesForm(forms.ModelForm):
 class ClassroomForm(forms.ModelForm):
     class Meta:
         model = Classroom
-        fields = ['name', 'group', 'intake']
+        fields = ['name', 'join_code', 'group', 'intake']
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        name = cleaned_data.get('name')
+        group = cleaned_data.get('group') # Get the group data
+        join_code = cleaned_data.get('join_code')
 
+        # Get the lecturer. This logic is correct for getting the lecturer context.
+        lecturer = None
+        if hasattr(self, 'request') and hasattr(self.request.user, 'lecturerprofile'):
+            lecturer = self.request.user.lecturerprofile
+        elif 'lecturer' in self.initial:
+            lecturer = self.initial.get('lecturer')
+        elif self.instance.pk:
+            lecturer = self.instance.lecturer
+
+        # --- Duplicate Check: Name + Group for THIS Lecturer ---
+        # Only proceed if we have a name, group, and lecturer context
+        if name and group and lecturer:
+            # Query for existing classrooms with the same name AND group for this lecturer
+            query_name_group = Classroom.objects.filter(
+                name=name,
+                group=group,
+                lecturer=lecturer
+            )
+            if self.instance.pk: # Exclude the current instance if we are updating
+                query_name_group = query_name_group.exclude(pk=self.instance.pk)
+
+            if query_name_group.exists():
+                # Add a non-field error or an error to the 'name'/'group' fields
+                # self.add_error(None, "You already have a classroom with this name and group.")
+                self.add_error('name', "You already have a classroom with this name and group. Please change the name or group.")
+                self.add_error('group', "You already have a classroom with this name and group. Please change the name or group.")
+
+
+        # --- Duplicate Check: Join Code (Global Uniqueness) ---
+        # A join code should typically be unique across ALL classrooms, regardless of lecturer.
+        # This check should remain separate from the name+group validation.
+        if join_code: # Only check if a join_code was provided
+            query_join_code = Classroom.objects.filter(join_code=join_code)
+            if self.instance.pk: # Exclude the current instance if we are updating
+                query_join_code = query_join_code.exclude(pk=self.instance.pk)
+
+            if query_join_code.exists():
+                self.add_error('join_code', "This join code is already in use. Please use a different code or generate a new one.")
+
+        return cleaned_data
+    
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
