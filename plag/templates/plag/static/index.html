@@ -869,6 +869,75 @@
       content: "Action:";
     }
   }
+
+  /* Style for the file-item and remove button */
+  .file-list {
+    margin-top: 10px;
+    width: 100%;
+  }
+
+  .file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* Space between file info and button */
+    padding: 8px 12px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    color: #333;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+  }
+
+  .file-info {
+    flex-grow: 1;
+    /* Allows info to take up available space */
+    display: flex;
+    flex-direction: column;
+    margin-right: 10px;
+    /* Space between info and button */
+  }
+
+  .file-name {
+    font-weight: bold;
+    word-break: break-all;
+    /* Helps with long filenames */
+  }
+
+  .file-size {
+    color: #6c757d;
+    font-size: 0.85em;
+  }
+
+  .remove-file-btn {
+    background: none;
+    border: none;
+    color: #dc3545;
+    /* Red color for delete action */
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s ease-in-out;
+  }
+
+  .remove-file-btn:hover {
+    color: #bd2130;
+  }
+
+  /* Optional: Hide upload text/icon when a file is selected */
+  .upload-area.has-file .upload-text,
+  .upload-area.has-file .upload-icon {
+    display: none;
+  }
+
+  /* Adjust upload-area padding/layout if file is present */
+  .upload-area.has-file {
+    padding: 10px;
+    /* Less padding to make room for file item */
+    min-height: auto;
+    /* Allow height to adjust to content */
+  }
 </style>
 {% endblock %}
 
@@ -1076,6 +1145,17 @@
     // Define allowed file extensions
     const ALLOWED_FILE_EXTENSIONS = ['.pdf', '.doc', '.docx', '.pptx', '.txt'];
 
+    // Function to clear file input and reset display
+    function clearFileInput() {
+      fileInput.value = ""; // Clear the selected file from the input
+      fileList.innerHTML = ""; // Clear displayed file info
+      documentNameInput.value = ""; // Clear document name
+      // Reset upload area state if it was showing a file
+      uploadArea.classList.remove("has-file");
+      uploadArea.querySelector('.upload-text').style.display = 'block'; // Show original text
+      uploadArea.querySelector('.upload-icon').style.display = 'block'; // Show original icon
+    }
+
     browseLink.addEventListener("click", () => fileInput.click());
 
     uploadArea.addEventListener("dragover", function (e) {
@@ -1122,6 +1202,8 @@
     });
 
     fileInput.addEventListener("change", function (e) {
+      clearFileInput();
+
       if (e.target.files.length > 0) {
         // **File Size Check on Change**
         const file = e.target.files[0];
@@ -1150,11 +1232,15 @@
       } else {
         documentNameInput.value = "";
         fileList.innerHTML = ""; // Clear file list when no file
-        }
+      }
     });
 
     function displayFiles(files) {
       fileList.innerHTML = "";
+      uploadArea.classList.add("has-file"); // Add class to adjust layout if needed
+      uploadArea.querySelector('.upload-text').style.display = 'none'; // Hide original text
+      uploadArea.querySelector('.upload-icon').style.display = 'none'; // Hide original icon
+
       Array.from(files).forEach((file) => {
         const fileItem = document.createElement("div");
         fileItem.className = "file-item";
@@ -1164,8 +1250,12 @@
                     <div class="file-info">
                         <div class="file-name">${file.name}</div>
                         <div class="file-size">${fileSize}</div>
-                    </div>`;
+                    </div>
+                    <button type="button" class="remove-file-btn" title="Remove file">
+                      <i class="fas fa-times"></i>
+                    </button>`;
         fileList.appendChild(fileItem);
+        fileItem.querySelector('.remove-file-btn').addEventListener('click', clearFileInput);
       });
     }
 
@@ -1182,7 +1272,7 @@
         e.preventDefault();
         alert("Error: Only PDF, DOC, DOCX, PPTX, and TXT files are allowed. '" + file.name + "' is not permitted.");
         return;
-        }
+      }
 
       // **Final File Size Check on Submit (redundant if previous checks are robust, but good for safety)**
       const file = fileInput.files[0];
@@ -1191,7 +1281,7 @@
         alert("Error: The file '" + file.name + "' exceeds the 10MB limit. Please upload a smaller file.");
         // No need to clear input here, as it would have been cleared by previous listeners
         return;
-        }
+      }
 
       if (documentNameInput.value.trim() === "") {
         e.preventDefault();
