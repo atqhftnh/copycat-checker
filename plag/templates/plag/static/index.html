@@ -1073,6 +1073,9 @@
     // Define the maximum file size in bytes (10MB)
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB in bytes
 
+    // Define allowed file extensions
+    const ALLOWED_FILE_EXTENSIONS = ['.pdf', '.doc', '.docx', '.pptx', '.txt'];
+
     browseLink.addEventListener("click", () => fileInput.click());
 
     uploadArea.addEventListener("dragover", function (e) {
@@ -1093,6 +1096,17 @@
       if (files.length > 0) {
         // **File Size Check on Drop**
         const file = files[0];
+
+        // **File Type Check on Drop**
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+        if (!ALLOWED_FILE_EXTENSIONS.includes(fileExtension)) {
+          alert("Error: Unsupport file type. " + file.name + "' is not permitted.");
+          fileInput.value = ""; // Clear the file input
+          fileList.innerHTML = ""; // Clear displayed file info
+          documentNameInput.value = ""; // Clear document name
+          return; // Stop further processing
+        }
+
         if (file.size > MAX_FILE_SIZE) {
           alert("Error: The file '" + file.name + "' exceeds the 10MB limit. Please upload a smaller file.");
           fileInput.value = ""; // Clear the file input
@@ -1111,6 +1125,17 @@
       if (e.target.files.length > 0) {
         // **File Size Check on Change**
         const file = e.target.files[0];
+
+        // **File Type Check on Change**
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+        if (!ALLOWED_FILE_EXTENSIONS.includes(fileExtension)) {
+          ("Error: Only PDF, DOC, DOCX, PPTX, and TXT files are allowed. '" + file.name + "' is not permitted.");
+          e.target.value = ""; // Clear the file input
+          fileList.innerHTML = ""; // Clear displayed file info
+          documentNameInput.value = ""; // Clear document name
+          return; // Stop further processing
+        }
+
         if (file.size > MAX_FILE_SIZE) {
           alert("Error: The file '" + file.name + "' exceeds the 10MB limit. Please upload a smaller file.");
           e.target.value = ""; // Clear the file input
@@ -1121,7 +1146,7 @@
 
         displayFiles(e.target.files);
         documentNameInput.value = file.name.split('.').slice(0, -1).join('.');
-        
+
       } else {
         documentNameInput.value = "";
         fileList.innerHTML = ""; // Clear file list when no file
@@ -1150,6 +1175,14 @@
         alert("Please select a file to upload or enter text, and provide a document name.");
         return;
       }
+
+      // **Final File Type Check on Submit**
+      const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+      if (!ALLOWED_FILE_EXTENSIONS.includes(fileExtension)) {
+        e.preventDefault();
+        alert("Error: Only PDF, DOC, DOCX, PPTX, and TXT files are allowed. '" + file.name + "' is not permitted.");
+        return;
+        }
 
       // **Final File Size Check on Submit (redundant if previous checks are robust, but good for safety)**
       const file = fileInput.files[0];
