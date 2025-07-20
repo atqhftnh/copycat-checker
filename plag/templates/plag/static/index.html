@@ -1070,6 +1070,9 @@
     const form = document.getElementById("plagiarismForm");
     const documentNameInput = document.getElementById("documentNameInput"); // NEW: Get document name input
 
+    // Define the maximum file size in bytes (10MB)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB in bytes
+
     browseLink.addEventListener("click", () => fileInput.click());
 
     uploadArea.addEventListener("dragover", function (e) {
@@ -1088,22 +1091,41 @@
 
       const files = e.dataTransfer.files;
       if (files.length > 0) {
+        // **File Size Check on Drop**
+        const file = files[0];
+        if (file.size > MAX_FILE_SIZE) {
+          alert("Error: The file '" + file.name + "' exceeds the 10MB limit. Please upload a smaller file.");
+          fileInput.value = ""; // Clear the file input
+          fileList.innerHTML = ""; // Clear displayed file info
+          documentNameInput.value = ""; // Clear document name
+          return; // Stop further processing
+        }
+
         fileInput.files = files;
         displayFiles(files);
-        // NEW: Populate document name input with file name
-        documentNameInput.value = files[0].name.split('.').slice(0, -1).join('.');
+        documentNameInput.value = file.name.split('.').slice(0, -1).join('.');
       }
     });
 
     fileInput.addEventListener("change", function (e) {
       if (e.target.files.length > 0) {
+        // **File Size Check on Change**
+        const file = e.target.files[0];
+        if (file.size > MAX_FILE_SIZE) {
+          alert("Error: The file '" + file.name + "' exceeds the 10MB limit. Please upload a smaller file.");
+          e.target.value = ""; // Clear the file input
+          fileList.innerHTML = ""; // Clear displayed file info
+          documentNameInput.value = ""; // Clear document name
+          return; // Stop further processing
+        }
+
         displayFiles(e.target.files);
-        // NEW: Populate document name input with file name
-        documentNameInput.value = e.target.files[0].name.split('.').slice(0, -1).join('.');
+        documentNameInput.value = file.name.split('.').slice(0, -1).join('.');
+        
       } else {
-        // Clear document name if no file selected
         documentNameInput.value = "";
-      }
+        fileList.innerHTML = ""; // Clear file list when no file
+        }
     });
 
     function displayFiles(files) {
@@ -1128,6 +1150,16 @@
         alert("Please select a file to upload or enter text, and provide a document name.");
         return;
       }
+
+      // **Final File Size Check on Submit (redundant if previous checks are robust, but good for safety)**
+      const file = fileInput.files[0];
+      if (file.size > MAX_FILE_SIZE) {
+        e.preventDefault(); // Prevent form submission
+        alert("Error: The file '" + file.name + "' exceeds the 10MB limit. Please upload a smaller file.");
+        // No need to clear input here, as it would have been cleared by previous listeners
+        return;
+        }
+
       if (documentNameInput.value.trim() === "") {
         e.preventDefault();
         alert("Please enter a document name.");
