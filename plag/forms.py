@@ -109,13 +109,12 @@ class UserPreferencesForm(forms.ModelForm):
 class ClassroomForm(forms.ModelForm):
     class Meta:
         model = Classroom
-        fields = ['name', 'join_code', 'group', 'intake']
+        fields = ['name', 'group', 'intake']
     
     def clean(self):
         cleaned_data = super().clean()
         name = cleaned_data.get('name')
         group = cleaned_data.get('group') # Get the group data
-        join_code = cleaned_data.get('join_code')
 
         # Get the lecturer. This logic is correct for getting the lecturer context.
         lecturer = None
@@ -143,18 +142,6 @@ class ClassroomForm(forms.ModelForm):
                 # self.add_error(None, "You already have a classroom with this name and group.")
                 self.add_error('name', "You already have a classroom with this name and group. Please change the name or group.")
                 self.add_error('group', "You already have a classroom with this name and group. Please change the name or group.")
-
-
-        # --- Duplicate Check: Join Code (Global Uniqueness) ---
-        # A join code should typically be unique across ALL classrooms, regardless of lecturer.
-        # This check should remain separate from the name+group validation.
-        if join_code: # Only check if a join_code was provided
-            query_join_code = Classroom.objects.filter(join_code=join_code)
-            if self.instance.pk: # Exclude the current instance if we are updating
-                query_join_code = query_join_code.exclude(pk=self.instance.pk)
-
-            if query_join_code.exists():
-                self.add_error('join_code', "This join code is already in use. Please use a different code or generate a new one.")
 
         return cleaned_data
     
