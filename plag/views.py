@@ -666,12 +666,6 @@ User = get_user_model() # Get the active User model
 
 @login_required
 def create_classroom(request):
-    # Permission check: Ensure the logged-in user is a lecturer
-    # It assumes your User model has an 'is_lecturer' boolean field.
-    if not hasattr(request.user, 'is_lecturer') or not request.user.is_lecturer:
-        messages.error(request, "You do not have permission to create classrooms.")
-        return redirect('student_dashboard') # Redirect to an appropriate dashboard for non-lecturers
-
     if request.method == 'POST':
         # Pass request.POST data and the request object itself to the form
         form = ClassroomForm(request.POST, request=request) 
