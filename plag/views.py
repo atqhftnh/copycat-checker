@@ -201,12 +201,12 @@ def join_classroom(request):
             else:
                 classroom.students.add(request.user)
                 messages.success(request, f'Successfully joined {classroom.name}!')
-            return redirect('index')
+            return redirect('student_dashboard')
         except Classroom.DoesNotExist:
             messages.error(request, 'Invalid join code.')
-            return redirect('index')
+            return redirect('student_dashboard')
     
-    return redirect('index')  # fallback
+    return redirect('student_dashboard')  # fallback
 
 
 @login_required

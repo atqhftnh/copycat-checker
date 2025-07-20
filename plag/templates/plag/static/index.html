@@ -1011,7 +1011,7 @@
     {% if messages %}
     <div class="messages-container">
       {% for message in messages %}
-      <div class="alert alert-{{ message.tags }}"> {# message.tags will be 'error', 'success', 'info' etc. #}
+      <div class="alert alert-{{ message.tags }}">
         {{ message }}
         <button type="button" class="close-alert" onclick="this.parentElement.style.display='none';">&times;</button>
       </div>
@@ -1037,7 +1037,6 @@
             <div id="fileList" class="file-list"></div>
           </div>
 
-          {# NEW: Document Name Input Field #}
           <div class="document-name-group">
             <label for="documentNameInput">Document Name:</label>
             <input type="text" id="documentNameInput" name="document_name" placeholder="Enter document name" required />

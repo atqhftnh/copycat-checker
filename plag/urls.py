@@ -29,7 +29,6 @@ urlpatterns = [
 
     # Static Pages using TemplateView
     path('products/', TemplateView.as_view(template_name='plag/static/products.html'), name='products'),
-    # ⭐ FIX: Changed as_as_view to as_view ⭐
     path('features-screenshots/', TemplateView.as_view(template_name='plag/static/features_and_screenshots.html'), name='features'),
     path('url-protection/', TemplateView.as_view(template_name='plag/static/url_protection.html'), name='url_prot'),
     path('document-protection/', TemplateView.as_view(template_name='plag/static/doc_protection.html'), name='doc_prot'),
