@@ -663,14 +663,6 @@ def data_cleanse(request):
 
 @login_required
 def create_classroom(request):
-    # Optional: Basic check to ensure only lecturers can access this.
-    # This assumes request.user has a one-to-one 'lecturerprofile'
-    # or you have a custom User model with an 'is_lecturer' flag.
-    # Adjust 'lecturerprofile' based on your actual model relationship.
-    if not hasattr(request.user, 'lecturerprofile'):
-        messages.error(request, "You do not have permission to create classrooms.")
-        return redirect('student_dashboard') # Redirect to appropriate dashboard for non-lecturers
-
     if request.method == 'POST':
         # Pass the request object to the form.
         # This allows the form's clean method to access request.user (and its lecturerprofile).
