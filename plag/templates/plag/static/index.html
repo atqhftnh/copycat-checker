@@ -1142,7 +1142,7 @@
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB in bytes
 
     // Define allowed file extensions
-    const ALLOWED_FILE_EXTENSIONS = ['.pdf', '.doc', '.docx', '.pptx', '.txt'];
+    const ALLOWED_FILE_EXTENSIONS = ['.pdf', '.doc', '.docx'];
 
     // Function to clear file input and reset display
     function clearFileInput() {
@@ -1210,7 +1210,7 @@
         // **File Type Check on Change**
         const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
         if (!ALLOWED_FILE_EXTENSIONS.includes(fileExtension)) {
-          ("Error: Only PDF, DOC, DOCX, PPTX, and TXT files are allowed. '" + file.name + "' is not permitted.");
+          ("Error: Only PDF, DOC and DOCX files are allowed. '" + file.name + "' is not permitted.");
           e.target.value = ""; // Clear the file input
           fileList.innerHTML = ""; // Clear displayed file info
           documentNameInput.value = ""; // Clear document name
