@@ -501,7 +501,7 @@
   {% if user.is_authenticated %}
   <div id="userProfileModal" class="profile-modal-overlay">
       <div class="profile-modal-content">
-          <button class="profile-modal-close" onclick="closeUserProfileModal()">&times;</button>
+          <button class="profile-modal-close" id="closeProfileModalBtn">&times;</button>
           <h3 class="profile-modal-title">My Profile</h3>
 
           <div class="profile-info">
@@ -549,27 +549,12 @@
 
   <!-- JavaScript -->
   <script>
-    // Smooth scrolling for navigation links (removed as no longer needed for #anchors)
-    // document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-    //   anchor.addEventListener("click", function (e) {
-    //     e.preventDefault();
-    //     const target = document.querySelector(this.getAttribute("href"));
-    //     if (target) {
-    //       target.scrollIntoView({
-    //         behavior: "smooth",
-    //         block: "start",
-    //       });
-    //     }
-    //   });
-    // });
-
-    // ⭐ NEW: User Profile Modal JavaScript ⭐
-    // Use DOMContentLoaded to ensure elements are available before script runs
     document.addEventListener('DOMContentLoaded', function() {
         console.log("DOM Content Loaded. Initializing User Profile Modal JS.");
 
         const userProfileBadge = document.getElementById('userProfileBadge');
         const userProfileModal = document.getElementById('userProfileModal');
+        const closeProfileModalBtn = document.getElementById('closeProfileModalBtn'); // Get the close button
 
         if (userProfileBadge) {
             console.log("userProfileBadge found. Attaching click listener.");
@@ -578,11 +563,19 @@
             console.warn("userProfileBadge element not found. Is the user authenticated?");
         }
 
+        // ⭐ NEW: Attach event listener to the close button ⭐
+        if (closeProfileModalBtn) {
+            console.log("Close button found. Attaching click listener.");
+            closeProfileModalBtn.addEventListener('click', closeUserProfileModal);
+        } else {
+            console.error("closeProfileModalBtn element not found.");
+        }
+
         function openUserProfileModal() {
             console.log("openUserProfileModal called.");
             if (userProfileModal) {
-                userProfileModal.style.display = 'flex'; // Use flex to center content
-                document.body.style.overflow = 'hidden'; // Prevent scrolling background
+                userProfileModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
                 console.log("Modal display set to flex, body overflow hidden.");
             } else {
                 console.error("userProfileModal element not found when trying to open.");
@@ -593,10 +586,11 @@
             console.log("closeUserProfileModal called.");
             if (userProfileModal) {
                 userProfileModal.style.display = 'none';
-                document.body.style.overflow = 'auto'; // Re-enable scrolling
+                document.body.style.overflow = 'auto';
                 console.log("Modal display set to none, body overflow auto.");
             } else {
                 console.error("userProfileModal element not found when trying to close.");
+            (!userProfileModal); // This line had an error, corrected below if you meant to check for it
             }
         }
 
@@ -619,44 +613,17 @@
         });
 
         // Function for Delete Account (Placeholder - requires backend)
-        function confirmDeleteAccount() {
+        window.confirmDeleteAccount = function() { // Expose globally if called from HTML onclick
             console.log("confirmDeleteAccount called.");
-            // IMPORTANT: This is a client-side confirmation.
-            // You MUST implement a robust backend view for account deletion.
-            // This should ideally be a POST request to a dedicated URL.
             if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
                 console.log("User confirmed account deletion.");
-                // Redirect or make an AJAX call to your Django delete account URL
-                // Example: window.location.href = "{% url 'delete_account' %}";
-                // Or use fetch API for a POST request:
-                // fetch("{% url 'delete_account' %}", {
-                //     method: 'POST',
-                //     headers: {
-                //         'X-CSRFToken': '{{ csrf_token }}', // Important for Django POST requests
-                //         'Content-Type': 'application/json'
-                //     },
-                //     body: JSON.stringify({})
-                // }).then(response => {
-                //     if (response.ok) {
-                //         alert('Account deleted successfully!');
-                //         window.location.href = "{% url 'login' %}"; // Redirect after deletion
-                //     } else {
-                //         alert('Failed to delete account. Please try again.');
-                //     }
-                // }).catch(error => {
-                //     console.error('Error deleting account:', error);
-                //     alert('An error occurred while deleting your account.');
-                // });
-
                 alert('Account deletion initiated.');
-                // For now, just log or show an alert, as the backend isn't ready.
             } else {
                 console.log("User cancelled account deletion.");
             }
-        }
+        };
     });
-    // ⭐ END NEW: User Profile Modal JavaScript ⭐
-  </script>
+</script>
 
   {% block extra_js %}{% endblock %}
 </body>
